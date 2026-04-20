@@ -1,0 +1,77 @@
+[
+  {
+    "pregunta": "Que canciones hablan de desamor?",
+    "sin_rag": "Te es experto en msica?",
+    "con_rag": "ok",
+    "fuentes": [
+      {
+        "titulo": "They ask you how you are, and you just have to say you’re fine",
+        "artista": "Katy Perry",
+        "emocion": "tristeza",
+        "score": 0.14297282695770264
+      },
+      {
+        "titulo": "let’s pretend we’re numb",
+        "artista": "XXXTentacion",
+        "emocion": "tristeza",
+        "score": 0.10231995582580566
+      },
+      {
+        "titulo": "They ask you how you are, and you just have to say you’re fine",
+        "artista": "Katy Perry",
+        "emocion": "tristeza",
+        "score": 0.09981626272201538
+      }
+    ]
+  },
+  {
+    "pregunta": "Que cancion recomiendas para alguien triste?",
+    "sin_rag": "Te es tan sabio?",
+    "con_rag": "that song and yeah i was depressed and sad and there were thoughts but there were never actions thankfully but i wanted to share that side of my story because i know there are so many other people out there that have gone through things like that and you always feel like you’re the only one going through that you walk out the door and you see someone you know and they ask you how you are and you just have to say youre fine when you’re not really fine but you just can’t get into it because they would never understand well then comes along a song that speaks to you that makes you feel like gosh i can get through this if she can get through this i can get through this'",
+    "fuentes": [
+      {
+        "titulo": "They ask you how you are, and you just have to say you’re fine",
+        "artista": "Katy Perry",
+        "emocion": "tristeza",
+        "score": 0.21871787309646606
+      },
+      {
+        "titulo": "They ask you how you are, and you just have to say you’re fine",
+        "artista": "Katy Perry",
+        "emocion": "tristeza",
+        "score": 0.18000340461730957
+      },
+      {
+        "titulo": "let’s pretend we’re numb",
+        "artista": "XXXTentacion",
+        "emocion": "tristeza",
+        "score": 0.17850422859191895
+      }
+    ]
+  },
+  {
+    "pregunta": "Dame una cancion de pop alegre.",
+    "sin_rag": "Es experto en msica?",
+    "con_rag": "i wanna be in love and i wanna be with you this one's for you",
+    "fuentes": [
+      {
+        "titulo": "I Wanna Be With U",
+        "artista": "Lady Gaga",
+        "emocion": "alegria",
+        "score": 0.22929519414901733
+      },
+      {
+        "titulo": "Come In With the Rain",
+        "artista": "Taylor Swift",
+        "emocion": "alegria",
+        "score": 0.2285723090171814
+      },
+      {
+        "titulo": "Beauty and a Beat (Acoustic)",
+        "artista": "Justin Bieber",
+        "emocion": "alegria",
+        "score": 0.21480929851531982
+      }
+    ]
+  }
+]

@@ -1,0 +1,413 @@
+{
+  "accuracy": 0.8623,
+  "f1_macro": 0.7702,
+  "confusion_matrix": [
+    [
+      34,
+      0,
+      2,
+      3,
+      2
+    ],
+    [
+      4,
+      31,
+      5,
+      0,
+      1
+    ],
+    [
+      6,
+      9,
+      304,
+      4,
+      3
+    ],
+    [
+      5,
+      2,
+      4,
+      29,
+      1
+    ],
+    [
+      1,
+      5,
+      10,
+      2,
+      34
+    ]
+  ],
+  "classification_report": "              precision    recall  f1-score   support\n\n     alegria       0.68      0.83      0.75        41\n    tristeza       0.66      0.76      0.70        41\n        amor       0.94      0.93      0.93       326\n       rabia       0.76      0.71      0.73        41\n   nostalgia       0.83      0.65      0.73        52\n\n    accuracy                           0.86       501\n   macro avg       0.77      0.78      0.77       501\nweighted avg       0.87      0.86      0.86       501\n",
+  "num_test_samples": 501,
+  "conversaciones_prueba": [
+    {
+      "id": 1,
+      "pregunta": "Que canciones hablan de desamor?",
+      "respuesta": "oh yeah i don't wanna be just a memory baby yeah hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo hoo",
+      "emocion_detectada": {
+        "emocion": "nostalgia",
+        "score": 0.4037
+      },
+      "fuentes": [
+        {
+          "titulo": "Always Remember Us This Way",
+          "artista": "Lady Gaga",
+          "emocion": "nostalgia",
+          "score": 0.16759520769119263
+        },
+        {
+          "titulo": "Always Remember Us This Way",
+          "artista": "Lady Gaga",
+          "emocion": "nostalgia",
+          "score": 0.14790689945220947
+        },
+        {
+          "titulo": "Beyoncé VMA’s 2014",
+          "artista": "Beyoncé",
+          "emocion": "nostalgia",
+          "score": 0.11448800563812256
+        },
+        {
+          "titulo": "Tim McGraw (Live from SoHo)",
+          "artista": "Taylor Swift",
+          "emocion": "nostalgia",
+          "score": 0.09263324737548828
+        },
+        {
+          "titulo": "In Memory",
+          "artista": "Ed Sheeran",
+          "emocion": "nostalgia",
+          "score": 0.0923924446105957
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "pregunta": "Que artistas de pop hay en el corpus?",
+      "respuesta": "",
+      "emocion_detectada": {
+        "emocion": "alegria",
+        "score": 0.4434
+      },
+      "fuentes": [
+        {
+          "titulo": "Free Fall",
+          "artista": "Beyoncé",
+          "emocion": "alegria",
+          "score": -0.15244603157043457
+        },
+        {
+          "titulo": "Hook 가요 (Free fall)",
+          "artista": "BTS (방탄소년단)",
+          "emocion": "alegria",
+          "score": -0.1636354923248291
+        },
+        {
+          "titulo": "Star67",
+          "artista": "Drake",
+          "emocion": "alegria",
+          "score": -0.20270824432373047
+        },
+        {
+          "titulo": "Diva (Homecoming Live)",
+          "artista": "Beyoncé",
+          "emocion": "alegria",
+          "score": -0.21992135047912598
+        },
+        {
+          "titulo": "Monologue Song (La La La)",
+          "artista": "Taylor Swift",
+          "emocion": "alegria",
+          "score": -0.22931289672851562
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "pregunta": "Estoy muy feliz hoy, que cancion me recomiendas?",
+      "respuesta": "hey cause every little thing is gonna be alright yeah rise up this morning smiled with the rising sun three little birds by my doorstep singing sweet songs of melodies pure and sure saying this is my message to you singing don't worry about a thing ohoh cause every little thing is gonna be alright yeah yeah but don't worry about a thing ohoh cause every little thing is gonna be alright yeah baby don't worry about a thing cause every little thing is gonna be alright yeah yeah yeah yeah don't worry about a thing cause every little thing is gonna be alright yeah baby don't worry about a thing cause every little thing is gonna be alright yeah yeah yeah yeah don't worry about a thing cause every little thing is gonna be alright yeah",
+      "emocion_detectada": {
+        "emocion": "alegria",
+        "score": 0.9384
+      },
+      "fuentes": [
+        {
+          "titulo": "Three Little Birds",
+          "artista": "Maroon 5",
+          "emocion": "alegria",
+          "score": 0.13686060905456543
+        },
+        {
+          "titulo": "Perm",
+          "artista": "Bruno Mars",
+          "emocion": "alegria",
+          "score": 0.08681344985961914
+        },
+        {
+          "titulo": "잠시 (Telepathy)",
+          "artista": "BTS (방탄소년단)",
+          "emocion": "alegria",
+          "score": 0.07868504524230957
+        },
+        {
+          "titulo": "Don’t Stop the Music (Jody Den Broeder Big Room Mix)",
+          "artista": "Rihanna",
+          "emocion": "alegria",
+          "score": 0.0698203444480896
+        },
+        {
+          "titulo": "Don’t Stop the Music (Jody den Broeder Radio Edit)",
+          "artista": "Rihanna",
+          "emocion": "alegria",
+          "score": 0.0698203444480896
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "pregunta": "Necesito algo para llorar un rato.",
+      "respuesta": "Be a fine line We'll be a fine line We'll be a fine line We'll be a fine line We'll be a fine line We'll be a fine line We'll be a fine line We'll be a fine line We'll be a fine line We'll be a fine line We'll be a fine line We'll be a fine line We'll be a fine line We'll be a fine line We'll be a fine line We'll be a fine line We'll be a fine line We'll be a fine line We'll be a fine line We'll be a fine line We'll be a fine line We'll be a fine line We'll be a fine line We'll be a fine line We'll be a fine line We'll be a fine line We'll be a fine line We'll be a fine line We'll be a fine line We'll be a fine line We'll be a fine line We'll be a fine line We'll be a fine line We'll be a fine line We'll be a fine line We'll be a fine line We'll be a fine line We'll be a fine line We'll be a fine line We'll be a fine line We'll be a fine line We'll be a fine line We'll be a fine line We'll be a fine line We",
+      "emocion_detectada": {
+        "emocion": "rabia",
+        "score": 0.3577
+      },
+      "fuentes": [
+        {
+          "titulo": "Fine Line",
+          "artista": "Harry Styles",
+          "emocion": "rabia",
+          "score": -0.09463942050933838
+        },
+        {
+          "titulo": "Stutter",
+          "artista": "Maroon 5",
+          "emocion": "rabia",
+          "score": -0.11122262477874756
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "pregunta": "Que diferencia hay entre una balada triste y una alegre?",
+      "respuesta": "side we'll be okay if we're connected surely it'll be brighter tomorrow as you share happiness it multiplies but if you share sadness also it multiplies too so always laugh and rest on my shoulder we may argue sometimes but we make up quickly i understand your feelings too well it's written on your face things like appearance hmm hmm it's as if it doesn't matter it has no relationship with our relationship it's fine even if it's everyday showing off at this point no thanks even without money just seeing you is ok so don't worry let's laugh again yep bro always the same yep bro by your side at anytime we happy together this unchanging feeling is the same as from back then",
+      "emocion_detectada": {
+        "emocion": "alegria",
+        "score": 0.5026
+      },
+      "fuentes": [
+        {
+          "titulo": "Good Day",
+          "artista": "BTS (방탄소년단)",
+          "emocion": "alegria",
+          "score": 0.049044251441955566
+        },
+        {
+          "titulo": "Lamento Borincano",
+          "artista": "Marc Anthony",
+          "emocion": "alegria",
+          "score": -0.05162644386291504
+        },
+        {
+          "titulo": "Happy (BBC Radio 1 Live Lounge)",
+          "artista": "Maroon 5",
+          "emocion": "alegria",
+          "score": -0.08230578899383545
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "pregunta": "Dame otra cancion parecida a la ultima que mencionaste.",
+      "respuesta": "I feel for you, killin''",
+      "emocion_detectada": {
+        "emocion": "alegria",
+        "score": 0.3497
+      },
+      "fuentes": [
+        {
+          "titulo": "Crooked Smile",
+          "artista": "J. Cole",
+          "emocion": "alegria",
+          "score": 0.12890541553497314
+        },
+        {
+          "titulo": "Come In With the Rain",
+          "artista": "Taylor Swift",
+          "emocion": "alegria",
+          "score": 0.1091991662979126
+        },
+        {
+          "titulo": "Alfred (Intro)",
+          "artista": "Eminem",
+          "emocion": "alegria",
+          "score": 0.10788285732269287
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "pregunta": "Y esa de quien es?",
+      "respuesta": "A quién van a engaar ahora tus brazos? A quién van a mentirle ahora tus labios? A quién vas a decirle ahora \"te amo\"? A quién van a mentirle ahora tus labios? A quién van a mentirle ahora tus labios? A quién van a mentirle ahora tus labios? A quién van a mentirle ahora tus labios? A quién van a mentirle ahora \"te amo\"? A quién van a mentirle ahora tus labios? A quién van a mentirle ahora tus labios? A quién van a mentirle ahora tus labios? A quién van a mentirle ahora \"te amo\"? A quién van a mentirle ahora tus labios? A quién van a mentirle ahora tus labios? A quién van a mentirle",
+      "emocion_detectada": {
+        "emocion": "nostalgia",
+        "score": 0.2807
+      },
+      "fuentes": [
+        {
+          "titulo": "Ahora Quién",
+          "artista": "Marc Anthony",
+          "emocion": "nostalgia",
+          "score": 0.02682960033416748
+        },
+        {
+          "titulo": "Ahora Quién (Salsa Version)",
+          "artista": "Marc Anthony",
+          "emocion": "nostalgia",
+          "score": 0.02682960033416748
+        },
+        {
+          "titulo": "¿Quién Te Dijo Eso?",
+          "artista": "Luis Fonsi",
+          "emocion": "nostalgia",
+          "score": -0.03571009635925293
+        },
+        {
+          "titulo": "Breakin’ Dishes (Soul Seekerz Remix)",
+          "artista": "Rihanna",
+          "emocion": "nostalgia",
+          "score": -0.10845303535461426
+        },
+        {
+          "titulo": "Breakin’ Dishes (Soul Seekerz)",
+          "artista": "Rihanna",
+          "emocion": "nostalgia",
+          "score": -0.11340665817260742
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "pregunta": "Dame una cancion de reggaeton con emocion de amor.",
+      "respuesta": "94 in my hand one more time 'fore i go body lockin' put a hold on me justin bieber you know i like that you're wild so make your way over here right now we only got a little while just thinkin' out loud celebrate life with me babe don't be in a rush to go now oh girl justin bieber i need a one dance",
+      "emocion_detectada": {
+        "emocion": "amor",
+        "score": 0.7473
+      },
+      "fuentes": [
+        {
+          "titulo": "One Dance (Remix)",
+          "artista": "Justin Bieber",
+          "emocion": "amor",
+          "score": 0.23313653469085693
+        },
+        {
+          "titulo": "So Amazing",
+          "artista": "Beyoncé",
+          "emocion": "amor",
+          "score": 0.19668889045715332
+        },
+        {
+          "titulo": "A Message",
+          "artista": "Coldplay",
+          "emocion": "amor",
+          "score": 0.18332165479660034
+        },
+        {
+          "titulo": "A Message 2010",
+          "artista": "Coldplay",
+          "emocion": "amor",
+          "score": 0.15662729740142822
+        },
+        {
+          "titulo": "Shivers",
+          "artista": "Ed Sheeran",
+          "emocion": "amor",
+          "score": 0.14997828006744385
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "pregunta": "Cuanto cuesta un vuelo a Madrid?",
+      "respuesta": "Vuelve otra ve', aunque sea una ve'",
+      "emocion_detectada": {
+        "emocion": "nostalgia",
+        "score": 0.4749
+      },
+      "fuentes": [
+        {
+          "titulo": "Madrid",
+          "artista": "Maluma",
+          "emocion": "nostalgia",
+          "score": -0.5552349090576172
+        },
+        {
+          "titulo": "Ballin’ Uncontrollably",
+          "artista": "Eminem",
+          "emocion": "nostalgia",
+          "score": -0.5984156131744385
+        },
+        {
+          "titulo": "Takin’ Back My Love",
+          "artista": "Enrique Iglesias",
+          "emocion": "nostalgia",
+          "score": -0.6308915615081787
+        },
+        {
+          "titulo": "The Calm",
+          "artista": "Drake",
+          "emocion": "nostalgia",
+          "score": -0.6514793634414673
+        },
+        {
+          "titulo": "Otra Noche en Miami",
+          "artista": "Bad Bunny",
+          "emocion": "nostalgia",
+          "score": -0.6672182083129883
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "pregunta": "Quien gano el mundial de futbol en 2022?",
+      "respuesta": "i pitch with a grenade swing away if you're feeling brave there's so much power in my name if you pop off and you say it stadium gon' do the wave i'm such a fucking lady you don't have to be so afraid 'cause i got room up on my team you can play but hold up refrain it's just the way the game is played it's best if you just wait your turn it's getting crowded over here but babe the wait is over sometimes it takes a thousand tries to win the wait is over fumble don't you fumble that's a flag on the play babe if you don't wanna then you don't have to wait but together we gon' be taking over refrain",
+      "emocion_detectada": {
+        "emocion": "alegria",
+        "score": 0.3344
+      },
+      "fuentes": [
+        {
+          "titulo": "Wait Your Turn",
+          "artista": "Rihanna",
+          "emocion": "alegria",
+          "score": -0.4058818817138672
+        },
+        {
+          "titulo": "Birthday Girl",
+          "artista": "Lizzo",
+          "emocion": "alegria",
+          "score": -0.41494083404541016
+        },
+        {
+          "titulo": "Ball For Me",
+          "artista": "Post Malone",
+          "emocion": "alegria",
+          "score": -0.4241980314254761
+        },
+        {
+          "titulo": "24K Magic",
+          "artista": "Bruno Mars",
+          "emocion": "alegria",
+          "score": -0.47826409339904785
+        },
+        {
+          "titulo": "Numb / Encore",
+          "artista": "Jay-Z",
+          "emocion": "alegria",
+          "score": -0.48016929626464844
+        }
+      ]
+    }
+  ]
+}
