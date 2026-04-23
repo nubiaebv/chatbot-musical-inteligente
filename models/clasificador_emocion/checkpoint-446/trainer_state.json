@@ -1,0 +1,119 @@
+{
+  "best_global_step": 446,
+  "best_metric": 0.5788020589445663,
+  "best_model_checkpoint": "C:\\Users\\pmari\\OneDrive\\Para Revisar\\Documentos\\GitHub\\chatbot-musical-inteligente\\models\\clasificador_emocion\\checkpoint-446",
+  "epoch": 2.0,
+  "eval_steps": 500,
+  "global_step": 446,
+  "is_hyper_param_search": false,
+  "is_local_process_zero": true,
+  "is_world_process_zero": true,
+  "log_history": [
+    {
+      "epoch": 0.2242152466367713,
+      "grad_norm": 2.1352133750915527,
+      "learning_rate": 6.24203821656051e-06,
+      "loss": 1.6141563415527345,
+      "step": 50
+    },
+    {
+      "epoch": 0.4484304932735426,
+      "grad_norm": 2.0714223384857178,
+      "learning_rate": 1.2611464968152866e-05,
+      "loss": 1.6107345581054688,
+      "step": 100
+    },
+    {
+      "epoch": 0.672645739910314,
+      "grad_norm": 2.7688419818878174,
+      "learning_rate": 1.8980891719745225e-05,
+      "loss": 1.591996612548828,
+      "step": 150
+    },
+    {
+      "epoch": 0.8968609865470852,
+      "grad_norm": 4.001726150512695,
+      "learning_rate": 1.9401709401709403e-05,
+      "loss": 1.5513970947265625,
+      "step": 200
+    },
+    {
+      "epoch": 1.0,
+      "eval_accuracy": 0.3215223097112861,
+      "eval_f1_macro": 0.2718952374124788,
+      "eval_loss": 1.4620370864868164,
+      "eval_runtime": 51.6026,
+      "eval_samples_per_second": 14.767,
+      "eval_steps_per_second": 0.93,
+      "step": 223
+    },
+    {
+      "epoch": 1.1210762331838564,
+      "grad_norm": 7.443710803985596,
+      "learning_rate": 1.868945868945869e-05,
+      "loss": 1.4412908935546875,
+      "step": 250
+    },
+    {
+      "epoch": 1.3452914798206277,
+      "grad_norm": 7.336607456207275,
+      "learning_rate": 1.7977207977207976e-05,
+      "loss": 1.2886190795898438,
+      "step": 300
+    },
+    {
+      "epoch": 1.5695067264573992,
+      "grad_norm": 10.440007209777832,
+      "learning_rate": 1.7264957264957267e-05,
+      "loss": 1.1523245239257813,
+      "step": 350
+    },
+    {
+      "epoch": 1.7937219730941703,
+      "grad_norm": 9.033085823059082,
+      "learning_rate": 1.6552706552706553e-05,
+      "loss": 1.072506866455078,
+      "step": 400
+    },
+    {
+      "epoch": 2.0,
+      "eval_accuracy": 0.5997375328083989,
+      "eval_f1_macro": 0.5788020589445663,
+      "eval_loss": 1.052807092666626,
+      "eval_runtime": 51.5972,
+      "eval_samples_per_second": 14.768,
+      "eval_steps_per_second": 0.93,
+      "step": 446
+    }
+  ],
+  "logging_steps": 50,
+  "max_steps": 1561,
+  "num_input_tokens_seen": 0,
+  "num_train_epochs": 7,
+  "save_steps": 500,
+  "stateful_callbacks": {
+    "EarlyStoppingCallback": {
+      "args": {
+        "early_stopping_patience": 2,
+        "early_stopping_threshold": 0.0
+      },
+      "attributes": {
+        "early_stopping_patience_counter": 0
+      }
+    },
+    "TrainerControl": {
+      "args": {
+        "should_epoch_stop": false,
+        "should_evaluate": false,
+        "should_log": false,
+        "should_save": true,
+        "should_training_stop": false
+      },
+      "attributes": {}
+    }
+  },
+  "total_flos": 471211745848320.0,
+  "train_batch_size": 16,
+  "trial_name": null,
+  "trial_params": null
+}

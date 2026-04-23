@@ -1,0 +1,71 @@
+[
+  {
+    "pregunta": "Que canciones hablan de desamor?",
+    "sin_rag": "Desamar",
+    "con_rag": "\"So Sick\" de Justin Bieber (emoción: tristeza, género: pop): pensamientos sobre usted y su memoria y cómo cada escuela me recuerda de lo que era esa era la razón h",
+    "fuentes": [
+      {
+        "titulo": "So Sick",
+        "artista": "Justin Bieber",
+        "emocion": "tristeza",
+        "score": 0.33845674991607666
+      },
+      {
+        "titulo": "Always Remember Us This Way",
+        "artista": "Lady Gaga",
+        "emocion": "tristeza",
+        "score": 0.2140291929244995
+      }
+    ]
+  },
+  {
+    "pregunta": "Que cancion recomiendas para alguien triste?",
+    "sin_rag": "Canción Recomendaciones para Alguien triste",
+    "con_rag": "\"La chica hecho (Remix de Catalizador)\" de Beyoncé",
+    "fuentes": [
+      {
+        "titulo": "Sad Serenade",
+        "artista": "Selena Gomez",
+        "emocion": "tristeza",
+        "score": 0.17757922410964966
+      },
+      {
+        "titulo": "So Sick",
+        "artista": "Justin Bieber",
+        "emocion": "tristeza",
+        "score": 0.1534249186515808
+      },
+      {
+        "titulo": "Broken-Hearted Girl (Catalyst Remix)",
+        "artista": "Beyoncé",
+        "emocion": "tristeza",
+        "score": 0.14836788177490234
+      }
+    ]
+  },
+  {
+    "pregunta": "Dame una cancion alegre para celebrar.",
+    "sin_rag": "Dame una canción alegre para celebrar.",
+    "con_rag": "\"Birthday (Octava Disco House Radio Edit)\" de Katy Perry (emoción: alegra, género: pop)",
+    "fuentes": [
+      {
+        "titulo": "Birthday (Octava Disco House Radio Edit)",
+        "artista": "Katy Perry",
+        "emocion": "alegria",
+        "score": 0.45599234104156494
+      },
+      {
+        "titulo": "Every Day Is A Holiday",
+        "artista": "Katy Perry",
+        "emocion": "alegria",
+        "score": 0.4232670068740845
+      },
+      {
+        "titulo": "Birthday",
+        "artista": "Katy Perry",
+        "emocion": "alegria",
+        "score": 0.40245717763900757
+      }
+    ]
+  }
+]
