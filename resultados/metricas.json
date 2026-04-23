@@ -85,7 +85,7 @@
     {
       "id": 2,
       "pregunta": "Que artistas de pop hay en el corpus?",
-      "respuesta": "Te recomiendo \"The Power of Pop\" de Taylor Swift, una canción de pop con emoción de amor. También puedes escuchar \"The Power of Pop\" de Taylor Swift.",
+      "respuesta": "Te recomiendo \"The Power of Pop\" de Taylor Swift, una canción de pop con emoción de amor. También puedes escuchar \"La Rompe Corazones\" de Daddy Yankee.",
       "emocion_detectada": {
         "emocion": "rabia",
         "score": 0.2286
@@ -95,31 +95,31 @@
           "titulo": "The Power of Pop",
           "artista": "Taylor Swift",
           "emocion": "amor",
-          "score": 0.13039922714233398
+          "score": 0.15453290939331055
         },
         {
-          "titulo": "The Power of Pop",
-          "artista": "Taylor Swift",
-          "emocion": "amor",
-          "score": 0.08280807733535767
+          "titulo": "La Rompe Corazones",
+          "artista": "Daddy Yankee",
+          "emocion": "tristeza",
+          "score": 0.1471318006515503
+        },
+        {
+          "titulo": "Numb / Encore",
+          "artista": "Jay-Z",
+          "emocion": "nostalgia",
+          "score": 0.12305021286010742
+        },
+        {
+          "titulo": "ELEMENT.",
+          "artista": "Kendrick Lamar",
+          "emocion": "rabia",
+          "score": 0.1223444938659668
         },
         {
           "titulo": "Make Things Right",
           "artista": "Drake",
           "emocion": "rabia",
-          "score": 0.06430768966674805
-        },
-        {
-          "titulo": "Billboard Woman of the Decade Speech",
-          "artista": "Taylor Swift",
-          "emocion": "amor",
-          "score": 0.037058353424072266
-        },
-        {
-          "titulo": "The Power of Pop",
-          "artista": "Taylor Swift",
-          "emocion": "amor",
-          "score": 0.02188551425933838
+          "score": 0.08092117309570312
         }
       ]
     },
@@ -241,72 +241,72 @@
           "titulo": "Mami",
           "artista": "Romeo Santos",
           "emocion": "amor",
-          "score": 0.40269720554351807
+          "score": 0.4583737254142761
         },
         {
           "titulo": "LA CANCIÓN",
           "artista": "J Balvin",
           "emocion": "amor",
-          "score": 0.3712785840034485
+          "score": 0.3776463270187378
         },
         {
-          "titulo": "The Last Song",
-          "artista": "Rihanna",
-          "emocion": "nostalgia",
-          "score": 0.3400084376335144
-        },
-        {
-          "titulo": "The Last Song",
-          "artista": "Rihanna",
-          "emocion": "nostalgia",
-          "score": 0.3360612392425537
+          "titulo": "End Game",
+          "artista": "Taylor Swift",
+          "emocion": "rabia",
+          "score": 0.35697346925735474
         },
         {
           "titulo": "Farewell",
           "artista": "Rihanna",
           "emocion": "rabia",
-          "score": 0.33185744285583496
+          "score": 0.3471338152885437
+        },
+        {
+          "titulo": "Bésame",
+          "artista": "Luis Fonsi",
+          "emocion": "amor",
+          "score": 0.3438616394996643
         }
       ]
     },
     {
       "id": 7,
       "pregunta": "Y esa de quien es?",
-      "respuesta": "Te recomiendo \"Own It\" de Drake, una canción de hip hop con emoción de nostalgia. También puedes escuchar \"Ahora Quién (Salsa Version)\" de Marc Anthony.",
+      "respuesta": "Te recomiendo \"El Papel, Pt. 1 (Versión Amante)\" de Romeo Santos, una canción de bachata con emoción de amor. También puedes escuchar \"Perra\" de J Balvin.",
       "emocion_detectada": {
         "emocion": "tristeza",
         "score": 0.2854
       },
       "fuentes": [
         {
-          "titulo": "Own It",
-          "artista": "Drake",
-          "emocion": "nostalgia",
-          "score": 0.3054813742637634
-        },
-        {
-          "titulo": "Ahora Quién (Salsa Version)",
-          "artista": "Marc Anthony",
-          "emocion": "tristeza",
-          "score": 0.2540496587753296
-        },
-        {
-          "titulo": "FAKE LOVE (Rocking Vibe Mix)",
-          "artista": "BTS (방탄소년단)",
+          "titulo": "El Papel, Pt. 1 (Versión Amante)",
+          "artista": "Romeo Santos",
           "emocion": "amor",
-          "score": 0.2290738821029663
+          "score": 0.3306037187576294
         },
         {
-          "titulo": "Ahora Quién",
-          "artista": "Marc Anthony",
-          "emocion": "tristeza",
-          "score": 0.21076977252960205
+          "titulo": "Perra",
+          "artista": "J Balvin",
+          "emocion": "rabia",
+          "score": 0.26484793424606323
         },
         {
-          "titulo": "Own It",
-          "artista": "Drake",
-          "emocion": "nostalgia",
-          "score": 0.20886927843093872
+          "titulo": "Qué Pena",
+          "artista": "Maluma",
+          "emocion": "rabia",
+          "score": 0.24800747632980347
+        },
+        {
+          "titulo": "Gasolina (DJ Buddha Remix)",
+          "artista": "Daddy Yankee",
+          "emocion": "alegria",
+          "score": 0.2396402359008789
+        },
+        {
+          "titulo": "Mírame",
+          "artista": "Daddy Yankee",
+          "emocion": "rabia",
+          "score": 0.2343810796737671
         }
       ]
     },
