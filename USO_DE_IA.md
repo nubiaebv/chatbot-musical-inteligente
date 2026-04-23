@@ -8,11 +8,11 @@
 
 ## 1. Herramientas de IA Utilizadas
 
-| Herramienta    | Tareas en las que se usó                                                          |
-|----------------|-----------------------------------------------------------------------------------|
-| Claude         | _Estructuración de Dash, control de excepciones y análisis de métricas._          |
-| Gemini         | _Consulta de redacción de mensajes de commit y generación de preguntas de prueba_ |
-| GitHub Copilot | _Sugerencias de estructuras de documentación_                                     |
+| Herramienta    | Tareas en las que se usó                                                                               |
+|----------------|--------------------------------------------------------------------------------------------------------|
+| Claude         | _Estructuración de Dash, control de excepciones y análisis de métricas._                               |
+| Gemini         | _Consulta de redacción de mensajes de commit y generación de preguntas de prueba_                      |
+| GitHub Copilot | _Sugerencias de estructuras de documentación y guía para la documentación del modelo en Hugging Face._ |
 
 ---
 ## 2. Ejemplos de Prompts Utilizados
@@ -89,6 +89,6 @@ _Sin embargo, el criterio de los integrantes del equipo de trabajo prevaleció e
 - **Modificación 1:** _Se adaptaron los prompts sugeridos por IA para alinearlos con la personalidad definida del chatbot (experto en géneros musicales)._
 - **Modificación 2:** _Se añadieron validaciones en el clasificador para evitar fugas de datos y garantizar reproducibilidad._
 - **Modificación 3:** _Se ajustó el pipeline RAG para comparar chunking por canción completa vs. por estrofa._
-
+- **Modificación 4:** _Se vinculó el modelo con Hugging Face para automatizar su descarga y mejorar la portabilidad del sistema._
 ---
 *Última actualización: Jueves 23 de abril del 2026*

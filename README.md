@@ -11,6 +11,7 @@ Agente conversacional bilingüe que utiliza RAG y Fine-Tuning para responder con
 ![Pandas](https://img.shields.io/badge/Pandas-2.x-150458?logo=pandas&logoColor=white)
 ![Jupyter](https://img.shields.io/badge/Jupyter-Notebook-F37626?logo=jupyter&logoColor=white)
 ![spaCy](https://img.shields.io/badge/spaCy-3.x-09A3D5?logo=spacy&logoColor=white)
+![Hugging Face Model](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Model-ffD21E)
 ---
 
 ##  Descripción
@@ -174,7 +175,7 @@ OPENAI_API_KEY=sk-...
 ANTHROPIC_API_KEY=sk-ant-...
 ```
 
-> ⚠️ El chatbot **funciona sin API key**, usando `google/flan-t5-base` como generador local. La API externa es una mejora opcional.
+> ⚠️ El chatbot **funciona sin API key**, usando `google/flan-t5-xl` como generador local. La API externa es una mejora opcional.
 
 ---
 
@@ -217,6 +218,7 @@ Ejecuta los notebooks en orden numérico dentro de `notebooks/`:
 ### Clasificador de emociones — `03_finetuning_clasificador.ipynb`
 
 - **Modelo base:** `distilbert-base-multilingual-cased` (entrenable en CPU/Colab gratis).
+- **Repositorio del Modelo:** El modelo fine-tuneado está alojado en Hugging Face: [nubiaebv/musicbot-emotion-classifier](https://huggingface.co/nubiaebv/musicbot-emotion-classifier).
 - **Dataset etiquetado:** mínimo 1,500 canciones con etiqueta de emoción.
 - **División:** 70% train / 15% validation / 15% test con seed fijo para reproducibilidad.
 - **Entrenamiento:** máximo 3 épocas.
