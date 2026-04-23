@@ -1,0 +1,437 @@
+{
+  "accuracy": 0.7572,
+  "f1_macro": 0.7475,
+  "confusion_matrix": [
+    [
+      73,
+      5,
+      5,
+      11,
+      8
+    ],
+    [
+      1,
+      44,
+      4,
+      4,
+      4
+    ],
+    [
+      7,
+      5,
+      168,
+      22,
+      16
+    ],
+    [
+      10,
+      9,
+      19,
+      147,
+      19
+    ],
+    [
+      4,
+      6,
+      9,
+      17,
+      145
+    ]
+  ],
+  "classification_report": "              precision    recall  f1-score   support\n\n     alegria       0.77      0.72      0.74       102\n    tristeza       0.64      0.77      0.70        57\n        amor       0.82      0.77      0.79       218\n       rabia       0.73      0.72      0.73       204\n   nostalgia       0.76      0.80      0.78       181\n\n    accuracy                           0.76       762\n   macro avg       0.74      0.76      0.75       762\nweighted avg       0.76      0.76      0.76       762\n",
+  "num_test_samples": 762,
+  "conversaciones_prueba": [
+    {
+      "id": 1,
+      "pregunta": "Que canciones hablan de desamor?",
+      "respuesta": "Te recomiendo \"So Sick\" de Justin Bieber, una canción de pop con emoción de tristeza. También puedes escuchar \"I Wanna Be With U\" de Lady Gaga.",
+      "emocion_detectada": {
+        "emocion": "tristeza",
+        "score": 0.3891
+      },
+      "fuentes": [
+        {
+          "titulo": "So Sick",
+          "artista": "Justin Bieber",
+          "emocion": "tristeza",
+          "score": 0.33845674991607666
+        },
+        {
+          "titulo": "I Wanna Be With U",
+          "artista": "Lady Gaga",
+          "emocion": "alegria",
+          "score": 0.33812737464904785
+        },
+        {
+          "titulo": "Stan (Live from the 43rd Annual Grammy Awards)",
+          "artista": "Eminem",
+          "emocion": "nostalgia",
+          "score": 0.2869131565093994
+        },
+        {
+          "titulo": "Deceiving",
+          "artista": "Drake",
+          "emocion": "nostalgia",
+          "score": 0.25519317388534546
+        },
+        {
+          "titulo": "Message from Katy Perry",
+          "artista": "Katy Perry",
+          "emocion": "alegria",
+          "score": 0.2327967882156372
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "pregunta": "Que artistas de pop hay en el corpus?",
+      "respuesta": "Te recomiendo \"The Power of Pop\" de Taylor Swift, una canción de pop con emoción de amor. También puedes escuchar \"The Power of Pop\" de Taylor Swift.",
+      "emocion_detectada": {
+        "emocion": "rabia",
+        "score": 0.2286
+      },
+      "fuentes": [
+        {
+          "titulo": "The Power of Pop",
+          "artista": "Taylor Swift",
+          "emocion": "amor",
+          "score": 0.13039922714233398
+        },
+        {
+          "titulo": "The Power of Pop",
+          "artista": "Taylor Swift",
+          "emocion": "amor",
+          "score": 0.08280807733535767
+        },
+        {
+          "titulo": "Make Things Right",
+          "artista": "Drake",
+          "emocion": "rabia",
+          "score": 0.06430768966674805
+        },
+        {
+          "titulo": "Billboard Woman of the Decade Speech",
+          "artista": "Taylor Swift",
+          "emocion": "amor",
+          "score": 0.037058353424072266
+        },
+        {
+          "titulo": "The Power of Pop",
+          "artista": "Taylor Swift",
+          "emocion": "amor",
+          "score": 0.02188551425933838
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "pregunta": "Estoy muy feliz hoy, que cancion me recomiendas?",
+      "respuesta": "Te recomiendo \"LA CANCIÓN\" de J Balvin, una canción de electronic con emoción de amor. También puedes escuchar \"Message from Katy Perry\" de Katy Perry.",
+      "emocion_detectada": {
+        "emocion": "alegria",
+        "score": 0.2527
+      },
+      "fuentes": [
+        {
+          "titulo": "LA CANCIÓN",
+          "artista": "J Balvin",
+          "emocion": "amor",
+          "score": 0.4247751235961914
+        },
+        {
+          "titulo": "Message from Katy Perry",
+          "artista": "Katy Perry",
+          "emocion": "alegria",
+          "score": 0.3733143210411072
+        },
+        {
+          "titulo": "Message from Katy Perry",
+          "artista": "Katy Perry",
+          "emocion": "alegria",
+          "score": 0.33799880743026733
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "pregunta": "Necesito algo para llorar un rato.",
+      "respuesta": "Te recomiendo \"Beautiful (Radio Edit)\" de Eminem, una canción de hip hop con emoción de nostalgia. También puedes escuchar \"Beautiful\" de Eminem.",
+      "emocion_detectada": {
+        "emocion": "tristeza",
+        "score": 0.3529
+      },
+      "fuentes": [
+        {
+          "titulo": "Beautiful (Radio Edit)",
+          "artista": "Eminem",
+          "emocion": "nostalgia",
+          "score": 0.3336251974105835
+        },
+        {
+          "titulo": "Beautiful",
+          "artista": "Eminem",
+          "emocion": "nostalgia",
+          "score": 0.27931565046310425
+        },
+        {
+          "titulo": "What Now (Guy Scheiman Radio Edit)",
+          "artista": "Rihanna",
+          "emocion": "alegria",
+          "score": 0.23640060424804688
+        },
+        {
+          "titulo": "What Now (Guy Scheiman Mixshow Edit)",
+          "artista": "Rihanna",
+          "emocion": "alegria",
+          "score": 0.23640060424804688
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "pregunta": "Que diferencia hay entre una balada triste y una alegre?",
+      "respuesta": "Pop, k pop, reggaeton.",
+      "emocion_detectada": {
+        "emocion": "amor",
+        "score": 0.3245
+      },
+      "fuentes": [
+        {
+          "titulo": "Sad Serenade",
+          "artista": "Selena Gomez",
+          "emocion": "tristeza",
+          "score": 0.321624755859375
+        },
+        {
+          "titulo": "Sad Serenade",
+          "artista": "Selena Gomez",
+          "emocion": "tristeza",
+          "score": 0.21735018491744995
+        },
+        {
+          "titulo": "Good Day",
+          "artista": "BTS (방탄소년단)",
+          "emocion": "alegria",
+          "score": 0.20147407054901123
+        },
+        {
+          "titulo": "Smile (One World: Together At Home)",
+          "artista": "Lady Gaga",
+          "emocion": "alegria",
+          "score": 0.1763981580734253
+        },
+        {
+          "titulo": "Monotonía",
+          "artista": "Ozuna",
+          "emocion": "tristeza",
+          "score": 0.15099883079528809
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "pregunta": "Dame otra cancion parecida a la ultima que mencionaste.",
+      "respuesta": "Te recomiendo \"Mami\" de Romeo Santos, una canción de latin con emoción de amor. También puedes escuchar \"LA CANCIÓN\" de J Balvin.",
+      "emocion_detectada": {
+        "emocion": "amor",
+        "score": 0.2822
+      },
+      "fuentes": [
+        {
+          "titulo": "Mami",
+          "artista": "Romeo Santos",
+          "emocion": "amor",
+          "score": 0.40269720554351807
+        },
+        {
+          "titulo": "LA CANCIÓN",
+          "artista": "J Balvin",
+          "emocion": "amor",
+          "score": 0.3712785840034485
+        },
+        {
+          "titulo": "The Last Song",
+          "artista": "Rihanna",
+          "emocion": "nostalgia",
+          "score": 0.3400084376335144
+        },
+        {
+          "titulo": "The Last Song",
+          "artista": "Rihanna",
+          "emocion": "nostalgia",
+          "score": 0.3360612392425537
+        },
+        {
+          "titulo": "Farewell",
+          "artista": "Rihanna",
+          "emocion": "rabia",
+          "score": 0.33185744285583496
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "pregunta": "Y esa de quien es?",
+      "respuesta": "Te recomiendo \"Own It\" de Drake, una canción de hip hop con emoción de nostalgia. También puedes escuchar \"Ahora Quién (Salsa Version)\" de Marc Anthony.",
+      "emocion_detectada": {
+        "emocion": "tristeza",
+        "score": 0.2854
+      },
+      "fuentes": [
+        {
+          "titulo": "Own It",
+          "artista": "Drake",
+          "emocion": "nostalgia",
+          "score": 0.3054813742637634
+        },
+        {
+          "titulo": "Ahora Quién (Salsa Version)",
+          "artista": "Marc Anthony",
+          "emocion": "tristeza",
+          "score": 0.2540496587753296
+        },
+        {
+          "titulo": "FAKE LOVE (Rocking Vibe Mix)",
+          "artista": "BTS (방탄소년단)",
+          "emocion": "amor",
+          "score": 0.2290738821029663
+        },
+        {
+          "titulo": "Ahora Quién",
+          "artista": "Marc Anthony",
+          "emocion": "tristeza",
+          "score": 0.21076977252960205
+        },
+        {
+          "titulo": "Own It",
+          "artista": "Drake",
+          "emocion": "nostalgia",
+          "score": 0.20886927843093872
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "pregunta": "Dame una cancion de pop con emocion de amor.",
+      "respuesta": "Te recomiendo \"Trivia 起: Just Dance\" de BTS (방탄소년단), una canción de k pop con emoción de alegria. También puedes escuchar \"Fall\" de Justin Bieber.",
+      "emocion_detectada": {
+        "emocion": "amor",
+        "score": 0.4624
+      },
+      "fuentes": [
+        {
+          "titulo": "Trivia 起: Just Dance",
+          "artista": "BTS (방탄소년단)",
+          "emocion": "alegria",
+          "score": 0.3859924077987671
+        },
+        {
+          "titulo": "Fall",
+          "artista": "Justin Bieber",
+          "emocion": "alegria",
+          "score": 0.3302433490753174
+        },
+        {
+          "titulo": "I Wanna Be With U",
+          "artista": "Lady Gaga",
+          "emocion": "alegria",
+          "score": 0.31446373462677
+        },
+        {
+          "titulo": "I Wanna Be With U",
+          "artista": "Lady Gaga",
+          "emocion": "alegria",
+          "score": 0.3085484504699707
+        },
+        {
+          "titulo": "A Message 2010",
+          "artista": "Coldplay",
+          "emocion": "amor",
+          "score": 0.28836971521377563
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "pregunta": "Cuanto cuesta un vuelo a Madrid?",
+      "respuesta": "This is about music.",
+      "emocion_detectada": {
+        "emocion": "tristeza",
+        "score": 0.2796
+      },
+      "fuentes": [
+        {
+          "titulo": "​​rockstar (Remix)",
+          "artista": "Post Malone",
+          "emocion": "alegria",
+          "score": -0.23844432830810547
+        },
+        {
+          "titulo": "Airplane pt.2",
+          "artista": "BTS (방탄소년단)",
+          "emocion": "alegria",
+          "score": -0.24306714534759521
+        },
+        {
+          "titulo": "Te Dejo Madrid",
+          "artista": "Shakira",
+          "emocion": "rabia",
+          "score": -0.24807584285736084
+        },
+        {
+          "titulo": "You Know, You Know",
+          "artista": "Drake",
+          "emocion": "nostalgia",
+          "score": -0.2590324878692627
+        },
+        {
+          "titulo": "Boots of Spanish Leather",
+          "artista": "Bob Dylan",
+          "emocion": "amor",
+          "score": -0.2650526762008667
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "pregunta": "Quien gano el mundial de futbol en 2022?",
+      "respuesta": "'Lo siento, solo puedo ayudarte con msica. Te recomenda una canción?'",
+      "emocion_detectada": {
+        "emocion": "amor",
+        "score": 0.2294
+      },
+      "fuentes": [
+        {
+          "titulo": "The 1989 World Tour - Special Guests",
+          "artista": "Taylor Swift",
+          "emocion": "rabia",
+          "score": 0.028689920902252197
+        },
+        {
+          "titulo": "Up All Night",
+          "artista": "Drake",
+          "emocion": "rabia",
+          "score": 0.009917616844177246
+        },
+        {
+          "titulo": "Up All Night",
+          "artista": "Drake",
+          "emocion": "rabia",
+          "score": 0.0006673336029052734
+        },
+        {
+          "titulo": "Up All Night",
+          "artista": "Nicki Minaj",
+          "emocion": "rabia",
+          "score": -0.01781916618347168
+        },
+        {
+          "titulo": "Up All Night",
+          "artista": "Drake",
+          "emocion": "rabia",
+          "score": -0.02400970458984375
+        }
+      ]
+    }
+  ]
+}
