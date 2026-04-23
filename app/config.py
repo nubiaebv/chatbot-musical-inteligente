@@ -1,53 +1,18 @@
 # app/config.py — Configuración centralizada
+# Importe de librerias
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 import logging
 
 # Configuración de Logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# ─── RUTAS DEL SISTEMA ──────────────────────────────────────────────────────
-BASE_DIR         = Path(__file__).parent.parent   # Raíz del proyecto
-DATA_DIR         = BASE_DIR / "data"
-MODELS_DIR       = BASE_DIR / "models"
-ASSETS_DIR       = BASE_DIR / "app" / "assets"
 
-# Asegurar existencia de directorios críticos
-for folder in [DATA_DIR, MODELS_DIR, ASSETS_DIR]:
-    folder.mkdir(parents=True, exist_ok=True)
-
-# ─── RUTAS DE DATOS Y CACHÉ ──────────────────────────────────────────────────
-DATA_PATH        = os.getenv("DATA_PATH",   str(DATA_DIR / "corpus_canciones.csv"))
-EMBED_CACHE_PATH = os.getenv("EMBED_CACHE", str(DATA_DIR / "embeddings_cache" / "faiss_index.pkl"))
-MODEL_DIR        = os.getenv("MODEL_DIR",   str(MODELS_DIR / "clasificador"))
-
-# ─── CONFIGURACIÓN DE IA LOCAL ──────────────────────────────────────────────
-# Usamos modelos que garantizan ejecución local estable
-EMBED_MODEL_NAME = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
-GEN_MODEL_NAME   = "google/flan-t5-xl"  # Modelo sugerido por su eficiencia local
-
-# FORZADO LOCAL:
-LLM_PROVIDER     = "local"
-
-# ─── PARÁMETROS DE RAG Y CHAT ───────────────────────────────────────────────
-TOP_K          = int(os.getenv("TOP_K",         "5"))  # Cantidad de chunks a recuperar
-HISTORY_TURNS  = int(os.getenv("HISTORY_TURNS", "5"))  # Memoria de la conversación
-CHUNKING_STRAT = "paragraph"                           # Estrategia de fragmentación
-
-# ─── CONFIGURACIÓN DE APP (DASH) ────────────────────────────────────────────
-APP_PORT  = 8050
-APP_DEBUG = False  # Desactivado para mayor estabilidad en la presentación
-
-logger.info(f"✅ Configuración cargada. Proveedor de LLM: {LLM_PROVIDER}")
 """
 Configuración centralizada del proyecto
 """
-
-# Importe de librerias
-import os
-from pathlib import Path
-from dotenv import load_dotenv
 
 # Cargar variables de entorno desde .env
 load_dotenv()
@@ -59,10 +24,17 @@ CACHE_DIR       = DATA_DIR / "embeddings_cache"
 MODELS_DIR      = BASE_DIR / "models"
 RESULTADOS_DIR  = BASE_DIR / "resultados"
 LOGS_DIR = BASE_DIR / "logs"
+ASSETS_DIR       = BASE_DIR / "app" / "assets"
+
 
 # Crear directorios si no existen
 for d in [CACHE_DIR, MODELS_DIR, RESULTADOS_DIR, LOGS_DIR]:
     d.mkdir(parents=True, exist_ok=True)
+
+# ─── RUTAS DE DATOS Y CACHÉ ──────────────────────────────────────────────────
+DATA_PATH        = os.getenv("DATA_PATH",   str(DATA_DIR / "corpus_canciones.csv"))
+EMBED_CACHE_PATH = os.getenv("EMBED_CACHE", str(DATA_DIR / "embeddings_cache" / "faiss_index.pkl"))
+MODEL_DIR        = os.getenv("MODEL_DIR",   str(MODELS_DIR / "clasificador"))
 
 # Base de Datos
 MONGO_URI       = os.getenv("MONGO_URI", "")
@@ -75,6 +47,11 @@ GENERATOR_MODEL    = os.getenv("GENERATOR_MODEL", "local")   # "local" | "claude
 FLAN_T5_MODEL      = "google/flan-t5-large"
 FINETUNE_BASE      = "distilbert-base-multilingual-cased"
 FINETUNE_MODEL_DIR = str(MODELS_DIR / "clasificador_emocion")
+EMBED_MODEL_NAME = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+GEN_MODEL_NAME   = "google/flan-t5-large"  # Modelo sugerido por su eficiencia local
+
+# FORZADO LOCAL:
+LLM_PROVIDER     = "local"
 
 # Archivos de caché
 CACHE_EMBEDDINGS = str(CACHE_DIR / "embeddings_parrafos.npy")
@@ -111,3 +88,14 @@ Si no encuentras información relevante en el corpus, lo dices claramente \
 en lugar de inventar. Eres amable, empático y apasionado por la música. \
 IMPORTANTE: Responde siempre en español, sin importar el idioma de las letras \
 recuperadas o el idioma en que te hagan la pregunta."""
+
+# ─── PARÁMETROS DE RAG Y CHAT ───────────────────────────────────────────────
+TOP_K          = int(os.getenv("TOP_K",         "5"))  # Cantidad de chunks a recuperar
+HISTORY_TURNS  = int(os.getenv("HISTORY_TURNS", "5"))  # Memoria de la conversación
+CHUNKING_STRAT = "paragraph"                           # Estrategia de fragmentación
+
+# ─── CONFIGURACIÓN DE APP (DASH) ────────────────────────────────────────────
+APP_PORT  = 8050
+APP_DEBUG = False  # Desactivado para mayor estabilidad en la presentación
+
+logger.info(f"✅ Configuración cargada. Proveedor de LLM: {LLM_PROVIDER}")
