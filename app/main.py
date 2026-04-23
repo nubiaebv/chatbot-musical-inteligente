@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 app = dash.Dash(
     __name__,
     external_stylesheets=[dbc.themes.BOOTSTRAP],
-    title="MúsicBot — RAG + Fine-Tuning",
+    title="MusicBot — N&P",
     assets_folder=str(ROOT / "app" / "assets"),
     suppress_callback_exceptions=True,
 )
