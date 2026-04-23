@@ -28,14 +28,14 @@ def _empty_chat_state():
     return html.Div(className="chat-empty", children=[
         html.Div("🎶", className="empty-icon"),
         html.H3("¿Qué escuchamos hoy?"),
-        html.P("Haz una pregunta sobre las letras de tu corpus musical.")
+        html.P("Haz una pregunta y encuentra la canción ideal para cada momento.")
     ])
 
 
 def _empty_sidebar_state():
     return html.Div(className="sidebar-empty", children=[
         html.Div("📂", className="empty-icon"),
-        html.P("Aquí aparecerán los fragmentos de las canciones recuperadas.")
+        html.P("Fuentes de consulta: Identificación de artista, canción y fragmentos de estrofas recuperadas.")
     ])
 
 
@@ -104,7 +104,7 @@ def build_layout() -> html.Div:
             # Derecha: Sidebar
             html.Div(className="sidebar", children=[
                 html.Div(className="sidebar-header", children=[
-                    html.H4("FUENTES (RAG)"),
+                    html.H4("CONTEXTO MUSICAL"),
                     html.Span("0", id="chunk-count-badge", className="count-badge")
                 ]),
                 html.Div(id="chunks-panel", className="sidebar-scroll")
