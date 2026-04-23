@@ -209,3 +209,8 @@ __marimo__/
 /.idea
 /.idea
 /.idea
+/data/embeddings_cache
+/models
+/data
+/data/embeddings_cache
+/data/embeddings_cache

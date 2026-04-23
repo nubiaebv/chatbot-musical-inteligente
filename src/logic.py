@@ -1,100 +1,177 @@
-# src/logic.py — Motor de IA y RAG Local
+"""
+src/logic.py — Adaptador entre la interfaz visual y el ChatbotEngine.
+Conecta main.py con el backend real (MongoDB + RAG + Fine-Tuning).
+"""
 from __future__ import annotations
-import logging
-import numpy as np
-import pandas as pd
-from dataclasses import dataclass
-from typing import Optional, List
-from sentence_transformers import SentenceTransformer
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
-import torch
 
-# Importación de configuración
-from app.config import (
-    DATA_PATH, EMBED_MODEL_NAME, GEN_MODEL_NAME,
-    TOP_K, HISTORY_TURNS
-)
+import sys
+import logging
+from dataclasses import dataclass
+from pathlib import Path
+from typing import List, Optional
+
+# Rutas
+ROOT = Path(__file__).parent.parent
+sys.path.insert(0, str(ROOT))
 
 logger = logging.getLogger(__name__)
 
 
+# ══════════════════════════════════════════════════════════════════
+# ESTRUCTURAS DE DATOS (compatibles con interface.py)
+# ══════════════════════════════════════════════════════════════════
+
 @dataclass
 class Chunk:
-    text: str
-    song: str
+    """Fragmento recuperado por el RAG — compatible con render_chunk_card()."""
+    text:   str
+    song:   str
     artist: str
-    genre: str
-    score: float
+    genre:  str
+    score:  float
+    emotion: str = ""
 
 
 class RAGResult:
-    def __init__(self, answer: str, chunks: List[Chunk], classifier_label: str = None):
-        self.answer = answer
-        self.chunks = chunks
+    """Resultado del chatbot — compatible con main.py."""
+    def __init__(self, answer: str, chunks: List[Chunk],
+                 classifier_label: str = None,
+                 classifier_conf:  float = None):
+        self.answer           = answer
+        self.chunks           = chunks
         self.classifier_label = classifier_label
+        self.classifier_conf  = classifier_conf
 
+
+# ══════════════════════════════════════════════════════════════════
+# MOTOR PRINCIPAL — wrapper sobre ChatbotEngine
+# ══════════════════════════════════════════════════════════════════
 
 class ChatEngine:
+    """
+    Adaptador que conecta la interfaz visual (main.py / interface.py)
+    con el backend real del proyecto (MongoDB + RAG + Fine-Tuning).
+
+    main.py llama a:
+      engine.initialize()    → carga modelos y RAG
+      engine.chat(text)      → procesa pregunta y retorna RAGResult
+      engine.clear_history() → limpia historial
+      engine._initialized    → booleano de estado
+    """
+
     def __init__(self):
-        logger.info("Cargando modelos locales (esto puede tardar unos segundos)...")
-        # Modelo de Embeddings local
-        self.embed_model = SentenceTransformer(EMBED_MODEL_NAME)
-
-        # Modelo de Generación local (Flan-T5)
-        self.tokenizer = AutoTokenizer.from_pretrained(GEN_MODEL_NAME)
-        self.gen_model = AutoModelForSeq2SeqLM.from_pretrained(GEN_MODEL_NAME)
-
-        self.corpus_df = None
-        self.corpus_embeddings = None
-        self._history = []
+        self._initialized  = False
+        self._bot          = None
+        self._db           = None
+        self._finetuning   = None
+        self._rag          = None
+        logger.info("ChatEngine creado. Llama a initialize() para cargar modelos.")
 
     def initialize(self):
-        """Carga el CSV y genera/carga los embeddings locales"""
-        self.corpus_df = pd.read_csv(DATA_PATH)
-        # Simulación de búsqueda manual (Pipeline a mano)
-        texts = self.corpus_df['lyrics'].tolist()
-        self.corpus_embeddings = self.embed_model.encode(texts, convert_to_tensor=True)
-        logger.info("Sistema RAG Local Inicializado.")
+        """
+        Carga todos los componentes del sistema:
+        1. Conexión a MongoDB Atlas
+        2. Corpus etiquetado con emociones
+        3. Índice FAISS
+        4. ChatbotEngine con Flan-T5
+        """
+        try:
+            logger.info("Inicializando sistema MúsicBot...")
 
-    def _get_context(self, query: str) -> List[Chunk]:
-        """Búsqueda semántica manual usando similitud de coseno"""
-        query_emb = self.embed_model.encode(query, convert_to_tensor=True)
-        # Cálculo de similitud manual
-        scores = torch.cos_sim(query_emb, self.corpus_embeddings)[0]
-        top_results = torch.topk(scores, k=TOP_K)
+            from src.mongo_utils      import mongo_utils
+            from src.finetuning_utils import finetuning_utils
+            from src.rag_utils        import rag_utils
+            from src.chatbot_engine   import chatbot_engine
 
-        chunks = []
-        for score, idx in zip(top_results.values, top_results.indices):
-            row = self.corpus_df.iloc[idx.item()]
-            chunks.append(Chunk(
-                text=row['lyrics'][:200] + "...",  # Fragmento
-                song=row['title'],
-                artist=row['artist'],
-                genre=row['genre'],
-                score=float(score)
-            ))
-        return chunks
+            # Conexión MongoDB
+            self._db = mongo_utils()
+            if not self._db.verificar_conexion():
+                raise RuntimeError("No se pudo conectar a MongoDB Atlas.")
 
-    def chat(self, user_msg: str) -> RAGResult:
-        if self.corpus_df is None: self.initialize()
+            # Cargar canciones
+            canciones_raw = self._db.cargar_canciones()
+            logger.info(f"Canciones cargadas: {len(canciones_raw)}")
 
-        # 1. Recuperación (RAG Manual)
-        chunks = self._get_context(user_msg)
+            # Corpus etiquetado (desde caché si existe)
+            self._finetuning  = finetuning_utils()
+            corpus_etiquetado = self._finetuning.etiquetar_corpus_con_modelo(canciones_raw)
+            logger.info(f"Corpus etiquetado: {len(corpus_etiquetado)} canciones")
 
-        # 2. Construcción de Prompt con Citas
-        context_text = "\n".join([f"[{c.artist} - {c.song}]: {c.text}" for c in chunks])
-        prompt = f"""Responde como MúsicBot. Usa solo este contexto:
-        {context_text}
+            # Inicializar RAG
+            self._rag = rag_utils()
+            self._rag.inicializar(corpus_etiquetado)
+            logger.info("Índice FAISS listo.")
 
-        Pregunta: {user_msg}
-        Respuesta (Cita siempre artista y canción):"""
+            # Chatbot Engine
+            self._bot = chatbot_engine()
+            logger.info("Flan-T5 cargado.")
 
-        # 3. Generación Local
-        inputs = self.tokenizer(prompt, return_tensors="pt", truncation=True, max_length=512)
-        outputs = self.gen_model.generate(**inputs, max_new_tokens=150)
-        answer = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+            self._initialized = True
+            logger.info("Sistema MúsicBot listo.")
+            print(">>> SISTEMA LISTO <<<")  # ← agregar esto
 
-        return RAGResult(answer=answer, chunks=chunks)
+        except Exception as e:
+            logger.error(f"Error al inicializar: {e}")
+            print(f">>> ERROR: {e}")  # ← agregar esto
+            self._initialized = False
+            raise
+
+    def chat(self, user_msg: str, use_rag: bool = True) -> RAGResult:
+        """
+        Procesa la pregunta del usuario y retorna un RAGResult
+        compatible con la interfaz visual.
+        """
+        if not self._initialized or self._bot is None:
+            return RAGResult(
+                answer="⏳ El sistema todavía está cargando. Espera un momento.",
+                chunks=[],
+                classifier_label=None,
+                classifier_conf=None
+            )
+
+        try:
+            # Llamar al ChatbotEngine
+            resultado = self._bot.responder(user_msg)
+
+            # Convertir chunks al formato de interface.py
+            chunks_visual = []
+            for c in resultado.get("chunks", []):
+                chunks_visual.append(Chunk(
+                    text    = c.get("texto",   "")[:200],
+                    song    = c.get("titulo",  "Desconocido"),
+                    artist  = c.get("artista", "Desconocido"),
+                    genre   = c.get("genero",  "Desconocido"),
+                    score   = c.get("score",   0.0),
+                    emotion = c.get("emocion", ""),
+                ))
+
+            # Datos del clasificador
+            emocion = resultado.get("emocion")
+            label   = emocion["emocion"] if emocion else None
+            conf    = emocion["score"]   if emocion else None
+
+            return RAGResult(
+                answer           = resultado["respuesta"],
+                chunks           = chunks_visual,
+                classifier_label = label,
+                classifier_conf  = conf,
+            )
+
+        except Exception as e:
+            logger.error(f"Error en chat: {e}")
+            return RAGResult(
+                answer="Lo siento, ocurrió un error. Intenta de nuevo.",
+                chunks=[],
+                classifier_label=None,
+                classifier_conf=None
+            )
+
+    def clear_history(self):
+        """Limpia el historial conversacional."""
+        if self._bot:
+            self._bot.limpiar_historial()
+            logger.info("Historial limpiado.")
 
 
+# Instancia global — importada por main.py
 engine = ChatEngine()

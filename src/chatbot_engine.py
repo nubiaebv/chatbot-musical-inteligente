@@ -365,14 +365,14 @@ class chatbot_engine:
                 pregunta_enriquecida = f'{pregunta_usuario} {contexto_prev}'.strip()
                 self._log.debug(f"Búsqueda enriquecida: {pregunta_enriquecida[:80]}")
 
-                chunks = buscar_chunks(pregunta=pregunta_enriquecida, top_k=TOP_K)
+                chunks = self._rag.buscar(pregunta=pregunta_enriquecida, top_k=TOP_K)
             else:
-                chunks = buscar_chunks(
+                chunks =  self._rag.buscar(
                     pregunta=pregunta_usuario, top_k=TOP_K,
                     filtro_emocion=filtro_emoc
                 )
                 if len(chunks) < 2:
-                    chunks = buscar_chunks(pregunta=pregunta_usuario, top_k=TOP_K)
+                    chunks =  self._rag.buscar(pregunta=pregunta_usuario, top_k=TOP_K)
 
             # Filtrar idiomas no latinos
             chunks_latinos = [c for c in chunks if c.get('idioma', '') in ['en', 'es', 'pt', 'fr', 'it']]

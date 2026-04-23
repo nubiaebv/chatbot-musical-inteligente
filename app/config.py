@@ -25,7 +25,7 @@ MODEL_DIR        = os.getenv("MODEL_DIR",   str(MODELS_DIR / "clasificador"))
 # ─── CONFIGURACIÓN DE IA LOCAL ──────────────────────────────────────────────
 # Usamos modelos que garantizan ejecución local estable
 EMBED_MODEL_NAME = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
-GEN_MODEL_NAME   = "google/flan-t5-base"  # Modelo sugerido por su eficiencia local
+GEN_MODEL_NAME   = "google/flan-t5-xl"  # Modelo sugerido por su eficiencia local
 
 # FORZADO LOCAL:
 LLM_PROVIDER     = "local"
