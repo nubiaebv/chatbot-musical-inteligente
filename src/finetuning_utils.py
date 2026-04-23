@@ -1,29 +1,20 @@
 """
-Clasificador de emoción
+finetuning_utils.py — Clasificador de emoción como clase con logs y excepciones.
 
 Flujo:
-  1. Etiquetado inicial por keywords (para entrenar el clasificador)
-  2. Fine-Tuning de DistilBERT con WeightedTrainer
-  3. El modelo fine-tuneado etiqueta TODO el corpus
+  1. Etiquetado combinado: modelo de sentimiento multilingüe + keywords
+  2. Submuestreo para balancear clases (ratio máximo 3x)
+  3. Fine-Tuning de DistilBERT con WeightedTrainer + EarlyStopping
+  4. El modelo fine-tuneado etiqueta TODO el corpus para el RAG
 """
 
 import os
 import sys
 import json
 import logging
+import random
 import numpy as np
 from pathlib import Path
-from datasets import Dataset, DatasetDict
-from collections import Counter
-from sklearn.metrics import accuracy_score, f1_score, classification_report, confusion_matrix
-import torch
-import torch.nn as nn
-from transformers import (AutoTokenizer, AutoModelForSequenceClassification,
-                          TrainingArguments, Trainer, DataCollatorWithPadding)
-from sklearn.metrics import accuracy_score, f1_score
-from sklearn.utils.class_weight import compute_class_weight
-import pickle
-from transformers import pipeline as hf_pipeline
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'app'))
 
@@ -37,7 +28,9 @@ from app.config import (
 CORPUS_ETIQUETADO_PATH = str(Path(CACHE_DIR) / "corpus_con_emociones.pkl")
 
 
-# Control para logs
+# ══════════════════════════════════════════════════════════════════
+# LOGGER
+# ══════════════════════════════════════════════════════════════════
 
 def _configurar_logger(nombre: str) -> logging.Logger:
     logger = logging.getLogger(nombre)
@@ -51,20 +44,23 @@ def _configurar_logger(nombre: str) -> logging.Logger:
     consola = logging.StreamHandler(sys.stdout)
     consola.setLevel(logging.INFO)
     consola.setFormatter(fmt)
-
     archivo = logging.FileHandler(Path(LOGS_DIR) / "finetuning.log", encoding="utf-8")
     archivo.setLevel(logging.DEBUG)
     archivo.setFormatter(fmt)
-
     logger.addHandler(consola)
     logger.addHandler(archivo)
     return logger
 
 
+# ══════════════════════════════════════════════════════════════════
+# CLASE EmotionClassifier
+# ══════════════════════════════════════════════════════════════════
+
 class finetuning_utils:
     """
     Clasificador de emoción musical con Singleton.
-    Gestiona etiquetado, entrenamiento, evaluación e inferencia.
+    Gestiona etiquetado combinado (modelo+keywords), balanceo,
+    entrenamiento con WeightedTrainer+EarlyStopping, evaluación e inferencia.
     """
 
     _instancia = None
@@ -78,64 +74,248 @@ class finetuning_utils:
     def __init__(self):
         if self._inicializado:
             return
-        self._log          = _configurar_logger("finetuning_utils")
-        self._pipeline_clf = None
-        self._inicializado = True
-        self._log.debug("finetuning_utils instanciado.")
+        self._log           = _configurar_logger("EmotionClassifier")
+        self._pipeline_clf  = None
+        self._etiquetador   = None   # modelo de sentimiento multilingüe
+        self._inicializado  = True
+        self._log.debug("EmotionClassifier instanciado.")
 
-    # Etiquetado por keywords
+    # ── Keywords base ────────────────────────────────────────────
 
-    def _etiquetar_keywords(self, texto: str):
-        """Etiqueta emoción por keywords. Solo para generar datos de entrenamiento."""
+    KEYWORDS = {
+        "alegria":   ["feliz","alegr","fiesta","celebr","reir","gozo","divert",
+                      "happy","joy","fun","party","laugh","enjoy","smile","dance","good"],
+        "tristeza":  ["trist","llor","dolor","sufr","pena","melanc","deprim",
+                      "sad","cry","pain","hurt","suffer","broken","tears","alone","empty"],
+        "amor":      ["amor","querer","amar","beso","corazon","enamorad","pasion",
+                      "love","heart","kiss","baby","darling","together","forever","mine"],
+        "rabia":     ["rabia","odio","enoj","furi","traicion","venganz",
+                      "hate","anger","mad","furious","damn","never","fight","wrong","liar"],
+        "nostalgia": ["recuerd","pasado","ayer","añor","extrañ","volver",
+                      "remember","past","yesterday","memories","used to","back","time","gone"],
+    }
+
+    def _contar_keywords(self, texto_lower: str) -> dict:
+        """Cuenta ocurrencias de keywords por emoción."""
+        return {e: sum(texto_lower.count(p) for p in ps)
+                for e, ps in self.KEYWORDS.items()}
+
+    # ── Etiquetado por keywords (umbral 2) ───────────────────────
+
+    def _etiquetar_keywords_estricto(self, texto: str):
+        """Keywords con umbral 2 — alta precisión, baja cobertura."""
         texto_lower = texto.lower()
-        reglas = {
-            "alegria":   ["feliz","alegr","fiesta","celebr","reir","gozo","divert","happy","joy","fun","party","celebrat","laugh","enjoy"],
-            "tristeza":  ["trist","llor","dolor","sufr","pena","melanc","deprim","sad","cry","pain","suffer","sorrow","heartbreak","lonely"],
-            "amor":      ["amor","querer","amar","beso","corazon","enamorad","pasion","love","heart","kiss","adore","darling","romance","together"],
-            "rabia":     ["rabia","odio","enoj","furi","maldic","traicion","venganz","hate","anger","rage","mad","furious","betrayal","revenge"],
-            "nostalgia": ["recuerd","pasado","ayer","tiempo","añor","extrañ","volver","remember","past","yesterday","memories","miss","gone","return"],
-        }
-        conteos = {e: sum(texto_lower.count(p) for p in ps) for e, ps in reglas.items()}
-        total = sum(conteos.values())
+        conteos = self._contar_keywords(texto_lower)
+        total   = sum(conteos.values())
         if total == 0:
             return None
         mejor = max(conteos, key=conteos.get)
         return mejor if conteos[mejor] >= 2 else None
 
-    def etiquetar_corpus_keywords(self, canciones: list) -> list:
-        """Etiqueta el corpus por keywords para generar el dataset de entrenamiento."""
+    def _etiquetar_keywords_suave(self, texto: str):
+        """Keywords con umbral 1 — mayor cobertura para canciones cortas."""
+        texto_lower = texto.lower()
+        conteos = self._contar_keywords(texto_lower)
+        if max(conteos.values()) == 0:
+            return None
+        return max(conteos, key=conteos.get)
 
-        self._log.info(f"Etiquetando corpus por keywords ({len(canciones)} canciones)...")
+    # ── Etiquetado con modelo de sentimiento ─────────────────────
+
+    def _cargar_etiquetador(self):
+        """Carga el modelo de sentimiento multilingüe (singleton)."""
+        if self._etiquetador is None:
+            try:
+                import torch
+                from transformers import pipeline as hf_pipeline
+                device = 0 if torch.cuda.is_available() else -1
+                self._log.info("Cargando modelo de sentimiento multilingüe...")
+                self._etiquetador = hf_pipeline(
+                    "text-classification",
+                    model="lxyuan/distilbert-base-multilingual-cased-sentiments-student",
+                    top_k=None, truncation=True, max_length=128, device=device
+                )
+                self._log.info("Modelo de sentimiento cargado.")
+            except Exception as e:
+                self._log.warning(f"No se pudo cargar modelo de sentimiento: {e}")
+        return self._etiquetador
+
+    def _etiquetar_con_modelo(self, texto: str) -> str:
+        """
+        Combina modelo de sentimiento + keywords para etiquetar.
+        Siempre retorna una emoción (nunca None).
+        """
+        try:
+            etiquetador = self._cargar_etiquetador()
+            texto_lower = texto.lower()
+
+            tiene = {e: any(k in texto_lower for k in ks)
+                     for e, ks in self.KEYWORDS.items()}
+
+            if etiquetador is not None:
+                raw = etiquetador(texto[:256])
+                while isinstance(raw, list) and isinstance(raw[0], list):
+                    raw = raw[0]
+                scores = {r['label'].lower(): r['score'] for r in raw}
+                pos = scores.get('positive', 0)
+                neg = scores.get('negative', 0)
+
+                # Reglas combinadas modelo + keywords
+                if neg > 0.6 and tiene["rabia"]:     return "rabia"
+                if neg > 0.5 and tiene["tristeza"]:   return "tristeza"
+                if neg > 0.4 and tiene["nostalgia"]:  return "nostalgia"
+                if pos > 0.6 and tiene["alegria"]:    return "alegria"
+                if pos > 0.5:
+                    return "alegria" if tiene["alegria"] else "amor"
+                if neg > 0.5:
+                    return "tristeza" if tiene["tristeza"] else "rabia"
+
+            # Fallback: keyword con mayor conteo
+            conteos = self._contar_keywords(texto_lower)
+            if max(conteos.values()) > 0:
+                return max(conteos, key=conteos.get)
+            return "amor"
+
+        except Exception as e:
+            self._log.warning(f"Error en etiquetado con modelo: {e}")
+            return "amor"
+
+    # ── Etiquetado del corpus completo ───────────────────────────
+
+    def etiquetar_corpus_keywords(self, canciones: list) -> list:
+        """
+        Etiqueta el corpus usando SOLO keywords con umbral 2.
+        Alta precisión, cobertura ~48%. Las canciones sin señal
+        clara quedan sin etiqueta (se descartan).
+
+        Para ampliar la cobertura usar etiquetar_con_modelo_sentimiento()
+        sobre las canciones que quedaron sin etiqueta.
+        """
+        from collections import Counter
+        self._log.info(f"Etiquetando por keywords ({len(canciones)} canciones)...")
         dataset, sin_etiqueta = [], 0
+
         try:
             for cancion in canciones:
                 letra = str(cancion.get("letra", "")).strip()
                 if len(letra) < 50:
+                    sin_etiqueta += 1
                     continue
-                texto   = letra[:800]
-                emocion = self._etiquetar_keywords(texto)
+                texto = letra[:800]
+                emocion = self._etiquetar_keywords_estricto(texto)
                 if emocion is None:
                     sin_etiqueta += 1
                     continue
                 dataset.append({
-                    "texto": texto, "emocion": emocion,
-                    "titulo": cancion.get("titulo",""), "artista": cancion.get("artista","")
+                    "texto": texto,
+                    "emocion": emocion,
+                    "titulo": cancion.get("titulo", ""),
+                    "artista": cancion.get("artista", ""),
                 })
 
             dist = Counter(d["emocion"] for d in dataset)
             self._log.info(f"Etiquetadas: {len(dataset)} | Sin etiqueta: {sin_etiqueta}")
-            self._log.info(f"Distribución: {dict(sorted(dist.items(), key=lambda x:-x[1]))}")
+            self._log.info(f"Cobertura: {len(dataset) / len(canciones) * 100:.1f}%")
+            self._log.info(f"Distribución: {dict(sorted(dist.items(), key=lambda x: -x[1]))}")
             return dataset
 
         except Exception as e:
             self._log.error(f"Error en etiquetado por keywords: {e}")
             raise RuntimeError(f"Error en etiquetado: {e}") from e
 
-    #Dataset HuggingFace
+    def etiquetar_con_modelo_sentimiento(self, canciones_sin_etiqueta: list,
+                                         titulos_ya_etiquetados: set) -> list:
+        """
+        Etiqueta canciones que quedaron sin etiqueta usando el modelo
+        de sentimiento multilingüe + keywords como desempate.
+        Llamar DESPUÉS de etiquetar_corpus_keywords() para ampliar cobertura.
+
+        Args:
+            canciones_sin_etiqueta:  Lista de docs de MongoDB sin etiqueta.
+            titulos_ya_etiquetados:  Set de títulos ya etiquetados (para no duplicar).
+
+        Returns:
+            Lista de nuevos dicts con 'texto' y 'emocion'.
+        """
+        from collections import Counter
+        self._log.info(
+            f"Etiquetando {len(canciones_sin_etiqueta)} canciones "
+            f"con modelo de sentimiento..."
+        )
+        nuevos = []
+
+        try:
+            for cancion in canciones_sin_etiqueta:
+                titulo = cancion.get("titulo", "")
+                if titulo in titulos_ya_etiquetados:
+                    continue
+                letra = str(cancion.get("letra", "")).strip()
+                if len(letra) < 20:
+                    continue
+                emocion = self._etiquetar_con_modelo(letra[:400])
+                if emocion:
+                    nuevos.append({
+                        "texto": letra[:800],
+                        "emocion": emocion,
+                        "titulo": titulo,
+                        "artista": cancion.get("artista", ""),
+                    })
+
+            dist = Counter(d["emocion"] for d in nuevos)
+            self._log.info(f"Nuevas etiquetas: {len(nuevos)}")
+            self._log.info(f"Distribución: {dict(sorted(dist.items(), key=lambda x: -x[1]))}")
+            return nuevos
+
+        except Exception as e:
+            self._log.error(f"Error en etiquetado con modelo: {e}")
+            raise RuntimeError(f"Error en etiquetado con modelo: {e}") from e
+    # ── Balanceo de clases ───────────────────────────────────────
+
+    def balancear_dataset(self, dataset: list, ratio_max: float = 3.0) -> list:
+        """
+        Submuestrea las clases mayoritarias para reducir el desbalance.
+        Mantiene todas las muestras de las clases minoritarias.
+
+        Args:
+            dataset:   Lista de dicts con campo 'emocion'.
+            ratio_max: Máximo ratio permitido entre clase mayor y menor.
+
+        Returns:
+            Dataset balanceado.
+        """
+        from collections import Counter
+
+        random.seed(RANDOM_SEED)
+        dist = Counter(d["emocion"] for d in dataset)
+
+        clase_min  = min(dist.values())
+        limite_max = int(clase_min * ratio_max)
+
+        self._log.info(f"Balanceando dataset | clase_min={clase_min} | limite_max={limite_max}")
+
+        dataset_balanceado = []
+        for emocion in dist:
+            subset = [d for d in dataset if d["emocion"] == emocion]
+            if len(subset) > limite_max:
+                subset = random.sample(subset, limite_max)
+                self._log.info(f"  {emocion:12s}: {dist[emocion]} → {limite_max} (submuestreado)")
+            else:
+                self._log.info(f"  {emocion:12s}: {len(subset)} (sin cambio)")
+            dataset_balanceado.extend(subset)
+
+        random.shuffle(dataset_balanceado)
+
+        dist_nueva  = Counter(d["emocion"] for d in dataset_balanceado)
+        nuevo_ratio = max(dist_nueva.values()) / min(dist_nueva.values())
+        self._log.info(f"Total final: {len(dataset_balanceado)} | Ratio: {nuevo_ratio:.1f}x")
+        return dataset_balanceado
+
+    # ── Dataset HuggingFace ──────────────────────────────────────
 
     def preparar_dataset_hf(self, dataset_etiquetado: list):
         """Prepara DatasetDict con splits 70/15/15 y seed fijo."""
-
+        from datasets import Dataset, DatasetDict
+        from collections import Counter
 
         self._log.info("Preparando DatasetDict para HuggingFace...")
         try:
@@ -150,9 +330,9 @@ class finetuning_utils:
                 d["label"] = EMOCION2ID.get(d["emocion"], 0)
 
             ds = Dataset.from_list(datos).shuffle(seed=RANDOM_SEED)
-            n  = len(ds)
-            n_test = int(n * TEST_SPLIT)
-            n_val  = int(n * VAL_SPLIT)
+            n       = len(ds)
+            n_test  = int(n * TEST_SPLIT)
+            n_val   = int(n * VAL_SPLIT)
 
             dd = DatasetDict({
                 "train":      ds.select(range(n_test + n_val, n)),
@@ -169,7 +349,7 @@ class finetuning_utils:
             self._log.error(f"Error al preparar dataset: {e}")
             raise RuntimeError(f"Error en preparación del dataset: {e}") from e
 
-    # Tokenización
+    # ── Tokenización ─────────────────────────────────────────────
 
     def _tokenizar_dataset(self, dataset_dict, tokenizer):
         """Tokeniza el DatasetDict."""
@@ -184,11 +364,24 @@ class finetuning_utils:
         tokenizado.set_format("torch")
         return tokenizado
 
-    # Entrenamiento
+    # ── Entrenamiento ────────────────────────────────────────────
 
     def entrenar(self, dataset_dict, num_labels=None):
-        """Fine-Tuning de DistilBERT con WeightedTrainer para corregir desbalance."""
-
+        """
+        Fine-Tuning de DistilBERT con:
+          - WeightedTrainer: corrige desbalance con CrossEntropyLoss ponderado
+          - EarlyStoppingCallback: detiene si no mejora en 2 épocas
+          - warmup_ratio: calentamiento gradual del learning rate
+        """
+        import torch
+        import torch.nn as nn
+        from transformers import (
+            AutoTokenizer, AutoModelForSequenceClassification,
+            TrainingArguments, Trainer, DataCollatorWithPadding,
+            EarlyStoppingCallback
+        )
+        from sklearn.metrics import accuracy_score, f1_score
+        from sklearn.utils.class_weight import compute_class_weight
 
         self._log.info(f"Iniciando fine-tuning de {FINETUNE_BASE}")
 
@@ -196,17 +389,19 @@ class finetuning_utils:
             if num_labels is None:
                 num_labels = len(set(dataset_dict["train"]["label"]))
 
-            # Class weights para corregir desbalance
+            # ── Class weights ─────────────────────────────────────
             labels_train  = np.array(dataset_dict["train"]["label"])
             clases_unicas = np.unique(labels_train)
-            pesos         = compute_class_weight("balanced", classes=clases_unicas, y=labels_train)
+            pesos         = compute_class_weight("balanced",
+                                                  classes=clases_unicas,
+                                                  y=labels_train)
             class_weights = torch.tensor(pesos, dtype=torch.float32)
 
-            self._log.info("Class weights calculados:")
+            self._log.info("Class weights:")
             for idx, peso in zip(clases_unicas, pesos):
                 self._log.info(f"  {ID2EMOCION.get(int(idx), idx):12s}: {peso:.4f}")
 
-            # WeightedTrainer
+            # ── WeightedTrainer ───────────────────────────────────
             class WeightedTrainer(Trainer):
                 def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
                     labels  = inputs.pop("labels")
@@ -216,6 +411,7 @@ class finetuning_utils:
                     )(outputs.logits, labels)
                     return (loss, outputs) if return_outputs else loss
 
+            # ── Modelo y tokenizer ────────────────────────────────
             tokenizer = AutoTokenizer.from_pretrained(FINETUNE_BASE)
             model     = AutoModelForSequenceClassification.from_pretrained(
                 FINETUNE_BASE, num_labels=num_labels,
@@ -233,8 +429,12 @@ class finetuning_utils:
                 }
 
             dispositivo = "GPU" if torch.cuda.is_available() else "CPU"
-            self._log.info(f"Dispositivo: {dispositivo} | Épocas: {MAX_EPOCHS} | Batch: {BATCH_SIZE}")
+            self._log.info(
+                f"Dispositivo: {dispositivo} | Épocas: {MAX_EPOCHS} | "
+                f"Batch: {BATCH_SIZE} | LR: {LEARNING_RATE}"
+            )
 
+            # ── TrainingArguments ─────────────────────────────────
             training_args = TrainingArguments(
                 output_dir=FINETUNE_MODEL_DIR,
                 num_train_epochs=MAX_EPOCHS,
@@ -242,16 +442,19 @@ class finetuning_utils:
                 per_device_eval_batch_size=BATCH_SIZE,
                 learning_rate=LEARNING_RATE,
                 weight_decay=0.01,
+                warmup_ratio=0.1,              # calentamiento gradual
                 eval_strategy="epoch",
                 save_strategy="epoch",
                 load_best_model_at_end=True,
                 metric_for_best_model="f1_macro",
+                greater_is_better=True,
                 seed=RANDOM_SEED,
                 logging_steps=50,
                 report_to="none",
                 fp16=torch.cuda.is_available(),
             )
 
+            # ── Trainer con EarlyStopping ─────────────────────────
             trainer = WeightedTrainer(
                 model=model, args=training_args,
                 train_dataset=dataset_tok["train"],
@@ -259,6 +462,7 @@ class finetuning_utils:
                 processing_class=tokenizer,
                 data_collator=DataCollatorWithPadding(tokenizer),
                 compute_metrics=compute_metrics,
+                callbacks=[EarlyStoppingCallback(early_stopping_patience=2)],
             )
 
             self._log.info("Entrenando...")
@@ -273,11 +477,13 @@ class finetuning_utils:
             self._log.error(f"Error durante el entrenamiento: {e}")
             raise RuntimeError(f"Error en fine-tuning: {e}") from e
 
-    # Evaluación
+    # ── Evaluación ───────────────────────────────────────────────
 
     def evaluar(self, trainer, dataset_dict, tokenizer) -> dict:
-        """Evalúa en test set y guarda métricas."""
-
+        """Evalúa en test set y guarda métricas en resultados/metricas.json."""
+        from sklearn.metrics import (
+            accuracy_score, f1_score, classification_report, confusion_matrix
+        )
 
         self._log.info("Evaluando modelo en test set...")
         try:
@@ -313,13 +519,16 @@ class finetuning_utils:
             self._log.error(f"Error en evaluación: {e}")
             raise RuntimeError(f"Error al evaluar el modelo: {e}") from e
 
-    # Etiquetar corpus completo con el modelo
+    # ── Etiquetar corpus completo con el modelo ──────────────────
 
-    def etiquetar_corpus_con_modelo(self, canciones: list, batch_size=64, forzar=False) -> list:
+    def etiquetar_corpus_con_modelo(self, canciones: list,
+                                     batch_size=64, forzar=False) -> list:
         """
         Usa el clasificador fine-tuneado para etiquetar TODO el corpus.
         Resultado cacheado en disco para no repetir la inferencia.
         """
+        import pickle
+        import torch
 
         cache_path = Path(CORPUS_ETIQUETADO_PATH)
 
@@ -339,16 +548,20 @@ class finetuning_utils:
             raise RuntimeError(msg)
 
         try:
-
+            from transformers import pipeline as hf_pipeline
             device = 0 if torch.cuda.is_available() else -1
             self._log.info(f"Cargando clasificador desde {FINETUNE_MODEL_DIR}...")
-            clf = hf_pipeline("text-classification", model=FINETUNE_MODEL_DIR,
-                               tokenizer=FINETUNE_MODEL_DIR, truncation=True,
-                               max_length=MAX_LENGTH, device=device)
+            clf = hf_pipeline(
+                "text-classification", model=FINETUNE_MODEL_DIR,
+                tokenizer=FINETUNE_MODEL_DIR, truncation=True,
+                max_length=MAX_LENGTH, device=device
+            )
 
             textos  = [str(c.get("letra", ""))[:512] for c in canciones]
             validos = [i for i, t in enumerate(textos) if len(t.strip()) >= 30]
-            self._log.info(f"Clasificando {len(validos)} canciones en batches de {batch_size}...")
+            self._log.info(
+                f"Clasificando {len(validos)} canciones en batches de {batch_size}..."
+            )
 
             resultados_clf = {}
             for i in range(0, len(validos), batch_size):
@@ -364,7 +577,9 @@ class finetuning_utils:
                         "emocion_score": round(item["score"], 4)
                     }
                 if (i // batch_size) % 10 == 0:
-                    self._log.info(f"  Procesadas: {min(i+batch_size, len(validos))}/{len(validos)}")
+                    self._log.info(
+                        f"  Procesadas: {min(i+batch_size, len(validos))}/{len(validos)}"
+                    )
 
             corpus_etiquetado = []
             for i, cancion in enumerate(canciones):
@@ -381,11 +596,13 @@ class finetuning_utils:
             with open(cache_path, "wb") as f:
                 pickle.dump(corpus_etiquetado, f)
 
-
+            from collections import Counter
             dist = Counter(c["emocion"] for c in corpus_etiquetado)
             self._log.info(f"Corpus etiquetado: {len(corpus_etiquetado)} canciones")
             for emocion, count in sorted(dist.items(), key=lambda x: -x[1]):
-                self._log.info(f"  {emocion:12s}: {count:5d} ({count/len(corpus_etiquetado)*100:.1f}%)")
+                self._log.info(
+                    f"  {emocion:12s}: {count:5d} ({count/len(corpus_etiquetado)*100:.1f}%)"
+                )
             self._log.info(f"Guardado en {cache_path}")
             return corpus_etiquetado
 
@@ -395,7 +612,7 @@ class finetuning_utils:
             self._log.error(f"Error al etiquetar corpus con modelo: {e}")
             raise RuntimeError(f"Error en etiquetado con modelo: {e}") from e
 
-    #Inferencia en tiempo real
+    # ── Inferencia en tiempo real ────────────────────────────────
 
     def cargar_clasificador(self):
         """Carga el clasificador fine-tuneado para inferencia (singleton)."""
@@ -404,10 +621,11 @@ class finetuning_utils:
                 self._log.warning("No hay modelo fine-tuneado disponible.")
                 return None
             try:
-
+                from transformers import pipeline as hf_pipeline
                 self._pipeline_clf = hf_pipeline(
                     "text-classification", model=FINETUNE_MODEL_DIR,
-                    tokenizer=FINETUNE_MODEL_DIR, truncation=True, max_length=MAX_LENGTH
+                    tokenizer=FINETUNE_MODEL_DIR,
+                    truncation=True, max_length=MAX_LENGTH
                 )
                 self._log.info("Clasificador cargado para inferencia.")
             except Exception as e:
@@ -417,7 +635,8 @@ class finetuning_utils:
 
     def predecir_emocion(self, texto: str):
         """
-        Predice la emoción de un texto. Robusto a cualquier estructura del pipeline.
+        Predice la emoción de un texto.
+        Robusto a cualquier estructura de output del pipeline.
 
         Returns:
             dict con 'emocion' y 'score', o None si no hay modelo.

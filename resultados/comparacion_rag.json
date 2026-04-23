@@ -1,76 +1,70 @@
 [
   {
     "pregunta": "Que canciones hablan de desamor?",
-    "sin_rag": "Te es experto en msica?",
-    "con_rag": "ok",
+    "sin_rag": "Desamar",
+    "con_rag": "\"So Sick\" de Justin Bieber (emoción: tristeza, género: pop): pensamientos sobre usted y su memoria y cómo cada escuela me recuerda de lo que era esa era la razón h",
     "fuentes": [
       {
-        "titulo": "They ask you how you are, and you just have to say you’re fine",
-        "artista": "Katy Perry",
+        "titulo": "So Sick",
+        "artista": "Justin Bieber",
         "emocion": "tristeza",
-        "score": 0.14297282695770264
+        "score": 0.33845674991607666
       },
       {
-        "titulo": "let’s pretend we’re numb",
-        "artista": "XXXTentacion",
+        "titulo": "Always Remember Us This Way",
+        "artista": "Lady Gaga",
         "emocion": "tristeza",
-        "score": 0.10231995582580566
-      },
-      {
-        "titulo": "They ask you how you are, and you just have to say you’re fine",
-        "artista": "Katy Perry",
-        "emocion": "tristeza",
-        "score": 0.09981626272201538
+        "score": 0.2140291929244995
       }
     ]
   },
   {
     "pregunta": "Que cancion recomiendas para alguien triste?",
-    "sin_rag": "Te es tan sabio?",
-    "con_rag": "that song and yeah i was depressed and sad and there were thoughts but there were never actions thankfully but i wanted to share that side of my story because i know there are so many other people out there that have gone through things like that and you always feel like you’re the only one going through that you walk out the door and you see someone you know and they ask you how you are and you just have to say youre fine when you’re not really fine but you just can’t get into it because they would never understand well then comes along a song that speaks to you that makes you feel like gosh i can get through this if she can get through this i can get through this'",
+    "sin_rag": "Canción Recomendaciones para Alguien triste",
+    "con_rag": "\"La chica hecho (Remix de Catalizador)\" de Beyoncé",
     "fuentes": [
       {
-        "titulo": "They ask you how you are, and you just have to say you’re fine",
-        "artista": "Katy Perry",
+        "titulo": "Sad Serenade",
+        "artista": "Selena Gomez",
         "emocion": "tristeza",
-        "score": 0.21871787309646606
+        "score": 0.17757922410964966
       },
       {
-        "titulo": "They ask you how you are, and you just have to say you’re fine",
-        "artista": "Katy Perry",
+        "titulo": "So Sick",
+        "artista": "Justin Bieber",
         "emocion": "tristeza",
-        "score": 0.18000340461730957
+        "score": 0.1534249186515808
       },
       {
-        "titulo": "let’s pretend we’re numb",
-        "artista": "XXXTentacion",
+        "titulo": "Broken-Hearted Girl (Catalyst Remix)",
+        "artista": "Beyoncé",
         "emocion": "tristeza",
-        "score": 0.17850422859191895
+        "score": 0.14836788177490234
       }
     ]
   },
   {
-    "pregunta": "Dame una cancion de pop alegre.",
-    "sin_rag": "Es experto en msica?",
-    "con_rag": "i wanna be in love and i wanna be with you this one's for you",
+    "pregunta": "Dame una cancion alegre para celebrar.",
+    "sin_rag": "Dame una canción alegre para celebrar.",
+    "con_rag": "\"Birthday (Octava Disco House Radio Edit)\" de Katy Perry (emoción: alegra, género: pop)",
     "fuentes": [
       {
-        "titulo": "I Wanna Be With U",
-        "artista": "Lady Gaga",
+        "titulo": "Birthday (Octava Disco House Radio Edit)",
+        "artista": "Katy Perry",
         "emocion": "alegria",
-        "score": 0.22929519414901733
+        "score": 0.45599234104156494
       },
       {
-        "titulo": "Come In With the Rain",
-        "artista": "Taylor Swift",
+        "titulo": "Every Day Is A Holiday",
+        "artista": "Katy Perry",
         "emocion": "alegria",
-        "score": 0.2285723090171814
+        "score": 0.4232670068740845
       },
       {
-        "titulo": "Beauty and a Beat (Acoustic)",
-        "artista": "Justin Bieber",
+        "titulo": "Birthday",
+        "artista": "Katy Perry",
         "emocion": "alegria",
-        "score": 0.21480929851531982
+        "score": 0.40245717763900757
       }
     ]
   }

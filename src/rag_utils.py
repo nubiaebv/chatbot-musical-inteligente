@@ -73,69 +73,76 @@ class rag_utils:
     # Chunking
 
     def chunking_por_parrafos(self, cancion, min_longitud=CHUNK_MIN_LEN):
-        """Divide la letra por estrofas. Cada chunk hereda la emoción del clasificador."""
+        """
+        Chunking por ventana de palabras (50 palabras, solapamiento 10).
+        Se usa porque las letras del corpus no tienen saltos de línea —
+        son bloques de texto continuo. La ventana deslizante garantiza
+        que cada chunk tenga contexto suficiente para el embedding.
+        """
         try:
             letra = str(cancion.get("letra", "")).strip()
             if not letra:
                 return []
 
-            parrafos = re.split(r'\n\s*\n', letra)
-            parrafos = [p.strip() for p in parrafos if p.strip()]
+            palabras = letra.split()
+            tamano_ventana = 50
+            solapamiento = 10
+            paso = tamano_ventana - solapamiento
 
-            if len(parrafos) <= 1:
-                parrafos = [p.strip() for p in letra.split('\n') if p.strip()]
-
-            chunks_texto, buffer = [], ""
-            for p in parrafos:
-                if len(buffer) + len(p) < min_longitud * 3:
-                    buffer += (" " if buffer else "") + p
-                else:
-                    if buffer.strip():
-                        chunks_texto.append(buffer.strip())
-                    buffer = p
-            if buffer.strip():
-                chunks_texto.append(buffer.strip())
+            # Canciones muy cortas: un solo chunk
+            if len(palabras) <= tamano_ventana:
+                chunks_texto = [letra]
+            else:
+                chunks_texto = []
+                for i in range(0, len(palabras), paso):
+                    grupo = palabras[i:i + tamano_ventana]
+                    if len(grupo) >= min_longitud // 5:  # mínimo ~6 palabras
+                        chunks_texto.append(" ".join(grupo))
+                    if i + tamano_ventana >= len(palabras):
+                        break
 
             if not chunks_texto:
-                chunks_texto = [letra[:1000]]
+                chunks_texto = [letra[:500]]
 
-            emocion       = cancion.get("emocion", "amor")
+            emocion = cancion.get("emocion", "amor")
             emocion_score = cancion.get("emocion_score", 0.0)
 
             return [{
-                "texto":         texto,
-                "titulo":        cancion.get("titulo",  "Desconocido"),
-                "artista":       cancion.get("artista", "Desconocido"),
-                "genero":        cancion.get("genero",  "Desconocido"),
-                "anio":          cancion.get("anio",    "?"),
-                "idioma":        cancion.get("idioma",  "?"),
-                "emocion":       emocion,
+                "texto": texto,
+                "titulo": cancion.get("titulo", "Desconocido"),
+                "artista": cancion.get("artista", "Desconocido"),
+                "genero": cancion.get("genero", "Desconocido"),
+                "anio": cancion.get("anio", "?"),
+                "idioma": cancion.get("idioma", "?"),
+                "emocion": emocion,
                 "emocion_score": emocion_score,
-                "chunk_id":      i,
-                "cancion_id":    str(cancion.get("_id", "")),
+                "chunk_id": i,
+                "cancion_id": str(cancion.get("_id", "")),
             } for i, texto in enumerate(chunks_texto)]
 
         except Exception as e:
-            self._log.warning(f"Error al chunkear canción '{cancion.get('titulo', '?')}': {e}")
+            self._log.warning(f"Error al chunkear '{cancion.get('titulo', '?')}': {e}")
             return []
 
     def chunking_cancion_completa(self, cancion):
-        """Estrategia alternativa: letra completa como un único chunk."""
+        """Estrategia alternativa: primeras 100 palabras como un único chunk."""
         try:
             letra = str(cancion.get("letra", "")).strip()
             if not letra:
                 return []
+            # Tomar primeras 100 palabras para representar la canción completa
+            texto = " ".join(letra.split()[:100])
             return [{
-                "texto":         letra[:2000],
-                "titulo":        cancion.get("titulo",  "Desconocido"),
-                "artista":       cancion.get("artista", "Desconocido"),
-                "genero":        cancion.get("genero",  "Desconocido"),
-                "anio":          cancion.get("anio",    "?"),
-                "idioma":        cancion.get("idioma",  "?"),
-                "emocion":       cancion.get("emocion", "amor"),
+                "texto": texto,
+                "titulo": cancion.get("titulo", "Desconocido"),
+                "artista": cancion.get("artista", "Desconocido"),
+                "genero": cancion.get("genero", "Desconocido"),
+                "anio": cancion.get("anio", "?"),
+                "idioma": cancion.get("idioma", "?"),
+                "emocion": cancion.get("emocion", "amor"),
                 "emocion_score": cancion.get("emocion_score", 0.0),
-                "chunk_id":      0,
-                "cancion_id":    str(cancion.get("_id", "")),
+                "chunk_id": 0,
+                "cancion_id": str(cancion.get("_id", "")),
             }]
         except Exception as e:
             self._log.warning(f"Error en chunking completo '{cancion.get('titulo', '?')}': {e}")
@@ -331,3 +338,78 @@ class rag_utils:
         except Exception as e:
             self._log.error(f"Error inesperado en búsqueda: {e}")
             raise RuntimeError(f"Error en búsqueda semántica: {e}") from e
+
+    def generar_respuesta(self, pregunta: str, chunks: list,
+                          flan_tokenizer, flan_model, dispositivo: str,
+                          max_new_tokens: int = 150) -> str:
+        """
+        Genera respuesta en dos pasos:
+          1. Genera en inglés con contexto de chunks
+          2. Traduce al español con Flan-T5
+        Los títulos de canciones se preservan sin traducir.
+        """
+        try:
+            import torch
+
+            if chunks:
+                canciones_str = "\n".join([
+                    f'- "{c["titulo"]}" by {c["artista"]} '                    f'(emotion: {c["emocion"]}, genre: {c["genero"]}): '                    f'{c["texto"][:100]}'
+                    for c in chunks[:3]
+                ])
+                prompt_ingles = (
+                    f"Based on these songs:\n{canciones_str}\n\n"
+                    f"Answer this music question briefly: {pregunta}\n"
+                    f"Mention song titles and artists. Do not translate song titles.\n"
+                    f"Answer:"
+                )
+            else:
+                prompt_ingles = (
+                    f"Answer briefly about music: {pregunta}\n"
+                    f"Answer:"
+                )
+
+            # Paso 1: generar en inglés
+            inputs = flan_tokenizer(
+                prompt_ingles, return_tensors="pt",
+                truncation=True, max_length=512
+            ).to(dispositivo)
+
+            with torch.no_grad():
+                outputs = flan_model.generate(
+                    **inputs,
+                    max_new_tokens=max_new_tokens,
+                    num_beams=4,
+                    no_repeat_ngram_size=3,
+                    early_stopping=True,
+                    repetition_penalty=2.0,
+                )
+            respuesta_en = flan_tokenizer.decode(
+                outputs[0], skip_special_tokens=True
+            ).strip()
+
+            # Paso 2: traducir al español
+            prompt_trad = f"Translate to Spanish: {respuesta_en}\nTranslation:"
+            inputs_trad = flan_tokenizer(
+                prompt_trad, return_tensors="pt",
+                truncation=True, max_length=512
+            ).to(dispositivo)
+
+            with torch.no_grad():
+                outputs_trad = flan_model.generate(
+                    **inputs_trad,
+                    max_new_tokens=200,
+                    num_beams=4,
+                    no_repeat_ngram_size=3,
+                    early_stopping=True,
+                )
+            respuesta_es = flan_tokenizer.decode(
+                outputs_trad[0], skip_special_tokens=True
+            ).strip()
+
+            self._log.debug(f"Respuesta EN: {respuesta_en[:100]}")
+            self._log.debug(f"Respuesta ES: {respuesta_es[:100]}")
+            return respuesta_es if respuesta_es else respuesta_en
+
+        except Exception as e:
+            self._log.error(f"Error en generación de respuesta: {e}")
+            return "Lo siento, no pude generar una respuesta."

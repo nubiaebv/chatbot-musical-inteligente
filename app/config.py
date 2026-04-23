@@ -30,7 +30,7 @@ COLLECTION_NAME = os.getenv("COLLECTION_NAME", "analisisMusical")
 # Modelos
 EMBEDDING_MODEL    = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 GENERATOR_MODEL    = os.getenv("GENERATOR_MODEL", "local")   # "local" | "claude" | "openai" | "gemini"
-FLAN_T5_MODEL      = "google/flan-t5-base"
+FLAN_T5_MODEL      = "google/flan-t5-large"
 FINETUNE_BASE      = "distilbert-base-multilingual-cased"
 FINETUNE_MODEL_DIR = str(MODELS_DIR / "clasificador_emocion")
 
@@ -49,17 +49,17 @@ RANDOM_SEED      = int(os.getenv("RANDOM_SEED", 42))
 TRAIN_SPLIT      = 0.70
 VAL_SPLIT        = 0.15
 TEST_SPLIT       = 0.15
-MAX_EPOCHS       = 8
+MAX_EPOCHS       = 7
 BATCH_SIZE       = 16
 LEARNING_RATE    = 2e-5
 MAX_LENGTH       = 256
-MIN_SAMPLES_PER_CLASS = 100   # clases con menos muestras se descartan
+MIN_SAMPLES_PER_CLASS = 50   # clases con menos muestras se descartan
 
 # Etiquetas de emoción
 EMOCIONES = ["alegria", "tristeza", "amor", "rabia", "nostalgia"]
 EMOCION2ID = {e: i for i, e in enumerate(EMOCIONES)}
 ID2EMOCION = {i: e for i, e in enumerate(EMOCIONES)}
-
+UMBRAL_CONFIANZA_EMOCION = 0.70
 # Personalidad del chatbot
 SYSTEM_PROMPT = """Eres MúsicBot, un curador emocional de música. \
 Tu especialidad es analizar emociones en letras de canciones y recomendar \
