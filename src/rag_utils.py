@@ -46,11 +46,7 @@ def _configurar_logger(nombre: str) -> logging.Logger:
     return logger
 
 class rag_utils:
-    """
-    Pipeline RAG completo como Singleton.
-    Gestiona chunking, embeddings, índice FAISS y búsqueda semántica.
-    El corpus debe venir pre-etiquetado con emociones por el clasificador.
-    """
+    # Implementa el motor RAG mediante Singleton para gestionar la búsqueda semántica y el índice FAISS del corpus etiquetado.
 
     _instancia = None
 
@@ -73,12 +69,7 @@ class rag_utils:
     # Chunking
 
     def chunking_por_parrafos(self, cancion, min_longitud=CHUNK_MIN_LEN):
-        """
-        Chunking por ventana de palabras (50 palabras, solapamiento 10).
-        Se usa porque las letras del corpus no tienen saltos de línea —
-        son bloques de texto continuo. La ventana deslizante garantiza
-        que cada chunk tenga contexto suficiente para el embedding.
-        """
+        # Divide el texto en bloques de 50 palabras con solapamiento para mantener el contexto semántico en textos sin párrafos.
         try:
             letra = str(cancion.get("letra", "")).strip()
             if not letra:
@@ -125,7 +116,7 @@ class rag_utils:
             return []
 
     def chunking_cancion_completa(self, cancion):
-        """Estrategia alternativa: primeras 100 palabras como un único chunk."""
+        # Captura el inicio de la canción como un solo bloque para priorizar el tema principal del tema.
         try:
             letra = str(cancion.get("letra", "")).strip()
             if not letra:
@@ -149,7 +140,7 @@ class rag_utils:
             return []
 
     def construir_chunks(self, canciones: list) -> list:
-        """Aplica chunking por párrafos a todo el corpus etiquetado."""
+        # Segmenta el corpus etiquetado respetando los saltos de línea para conservar la cohesión de las estrofas.
         self._log.info(f"Construyendo chunks para {len(canciones)} canciones...")
         try:
             todos = []
@@ -164,7 +155,7 @@ class rag_utils:
     # Embeddings
 
     def _get_modelo_embeddings(self) -> SentenceTransformer:
-        """Carga el modelo de embeddings una sola vez."""
+        # Instancia el modelo de embeddings como objeto único para optimizar el uso de memoria y rendimiento.
         if self._modelo_emb is None:
             try:
                 self._log.info(f"Cargando modelo de embeddings: {EMBEDDING_MODEL}")
@@ -177,7 +168,7 @@ class rag_utils:
         return self._modelo_emb
 
     def generar_embeddings(self, chunks: list, forzar=False):
-        """Genera o carga desde caché los embeddings de los chunks."""
+        #Genera o carga desde caché los embeddings de los chunks.
         if not forzar and Path(CACHE_EMBEDDINGS).exists() and Path(CACHE_CHUNKS).exists():
             try:
                 self._log.info("Cargando embeddings desde caché...")
@@ -211,7 +202,7 @@ class rag_utils:
     # Índice FAISS
 
     def construir_indice(self, embeddings, forzar=False):
-        """Construye o carga el índice FAISS con búsqueda por coseno."""
+        #Construye o carga el índice FAISS con búsqueda por coseno.
         if not forzar and Path(CACHE_FAISS).exists():
             try:
                 self._log.info("Cargando índice FAISS desde caché...")
@@ -238,11 +229,7 @@ class rag_utils:
     # Inicialización completa
 
     def inicializar(self, canciones_etiquetadas=None, forzar=False):
-        """
-        Inicializa el pipeline RAG completo.
-        Si existe caché, carga sin necesitar las canciones.
-        Si no, requiere el corpus etiquetado por etiquetar_corpus_con_modelo().
-        """
+        # Configura el pipeline RAG cargando el índice desde caché o procesando el corpus etiquetado si es la primera vez.
         cache_ok = (Path(CACHE_EMBEDDINGS).exists() and
                     Path(CACHE_CHUNKS).exists() and
                     Path(CACHE_FAISS).exists())
@@ -275,19 +262,7 @@ class rag_utils:
 
     def buscar(self, pregunta: str, top_k=TOP_K, filtro_genero=None,
                filtro_idioma=None, filtro_emocion=None) -> list:
-        """
-        Busca chunks relevantes en FAISS filtrando por emoción del clasificador.
-
-        Args:
-            pregunta:       Texto de la pregunta del usuario.
-            top_k:          Número de resultados a devolver.
-            filtro_genero:  Filtrar por género (ej: 'pop').
-            filtro_idioma:  Filtrar por idioma (ej: 'es').
-            filtro_emocion: Filtrar por emoción del clasificador (ej: 'tristeza').
-
-        Returns:
-            Lista de chunks con metadatos y score de similitud.
-        """
+        # Ejecuta la búsqueda semántica en FAISS aplicando filtros de emoción, género e idioma para recuperar los fragmentos más afines.
         if self._indice_faiss is None or self._chunks is None:
             msg = "RAG no inicializado. Llama a inicializar() primero."
             self._log.error(msg)
@@ -342,12 +317,7 @@ class rag_utils:
     def generar_respuesta(self, pregunta: str, chunks: list,
                           flan_tokenizer, flan_model, dispositivo: str,
                           max_new_tokens: int = 150) -> str:
-        """
-        Genera respuesta en dos pasos:
-          1. Genera en inglés con contexto de chunks
-          2. Traduce al español con Flan-T5
-        Los títulos de canciones se preservan sin traducir.
-        """
+        # Genera la respuesta en inglés usando el contexto recuperado y la traduce al español preservando los títulos originales.
         try:
             import torch
 

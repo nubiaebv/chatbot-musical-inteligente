@@ -21,10 +21,7 @@ from app.config import MONGO_URI, DB_NAME, COLLECTION_NAME, LOGS_DIR
 # Control para logs
 
 def _configurar_logger(nombre: str) -> logging.Logger:
-    """
-    Configura un logger que escribe tanto en consola como en archivo.
-    El archivo de log se guarda en logs/mongo_utils.log
-    """
+    # Configura el sistema de registro para enviar eventos a la consola y al archivo logs/mongo_utils.log simultáneamente.
     logger = logging.getLogger(nombre)
 
     if logger.handlers:

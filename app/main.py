@@ -1,5 +1,5 @@
 """
-app/main.py — Orquestador Final de MúsicBot
+app/main.py — Orquestador de MusicBot
 Lanzar con: python app/main.py
 Abrir en:   http://localhost:8050
 """
@@ -29,7 +29,7 @@ from app.config import APP_PORT, APP_DEBUG
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# ── Inicializar Dash ──────────────────────────────────────────────
+# Inicializar Dash
 app = dash.Dash(
     __name__,
     external_stylesheets=[dbc.themes.BOOTSTRAP],
@@ -44,7 +44,7 @@ app.layout = build_layout()
 threading.Thread(target=lambda: engine.initialize(), daemon=True).start()
 
 
-# ── CALLBACK: INDICADOR DE ESTADO ────────────────────────────────
+#  CALLBACK: INDICADOR DE ESTADO
 
 @app.callback(
     Output("system-status", "children"),
@@ -71,7 +71,7 @@ def check_system_status(n):
     )
 
 
-# ── CALLBACK: ENVIAR MENSAJE ──────────────────────────────────────
+#  CALLBACK: ENVIAR MENSAJE
 
 @app.callback(
     Output("conversation-store", "data"),
@@ -131,7 +131,7 @@ def handle_send(n_btn, n_suggestions, user_text, conversation):
     return new_conv, chunks_data, classifier_data, "", {"display": "none"}
 
 
-# ── CALLBACK: VISTA DEL CHAT ──────────────────────────────────────
+# CALLBACK: VISTA DEL CHAT
 
 @app.callback(
     Output("chat-history", "children"),
@@ -143,7 +143,7 @@ def update_chat_view(conversation):
     return [render_message(m["role"], m["content"]) for m in conversation]
 
 
-# ── CALLBACK: PANEL LATERAL ───────────────────────────────────────
+#  CALLBACK: PANEL LATERAL
 
 @app.callback(
     Output("chunks-panel",      "children"),
@@ -159,7 +159,7 @@ def update_sidebar_view(chunks, classifier):
     return render_chunks_panel(chunks, label, conf), str(len(chunks))
 
 
-# ── CALLBACK: LIMPIAR CHAT ────────────────────────────────────────
+#  CALLBACK: LIMPIAR CHAT
 
 @app.callback(
     Output("conversation-store", "data",  allow_duplicate=True),
@@ -176,7 +176,7 @@ def clear_chat(n):
     return no_update, no_update, no_update, no_update
 
 
-# ── ARRANQUE ──────────────────────────────────────────────────────
+# ARRANQUE
 
 if __name__ == "__main__":
     def open_browser():

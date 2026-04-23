@@ -1,6 +1,7 @@
 """
-src/interface.py — Capa de presentación de MúsicBot
-Incluye indicador de estado del sistema en tiempo real.
+src/interface.py — # Gestiona la interfaz gráfica del bot,
+incorporando un monitor dinámico para visualizar el estado de los procesos del sistema.
+
 """
 from __future__ import annotations
 import dash_bootstrap_components as dbc
@@ -22,7 +23,7 @@ EMOTION_EMOJI = {
 }
 
 
-# ── Header ────────────────────────────────────────────────────────
+#  Header
 
 def _header() -> html.Header:
     return html.Header(
@@ -52,7 +53,7 @@ def _header() -> html.Header:
     )
 
 
-# ── Estados vacíos ────────────────────────────────────────────────
+# Estados vacíos
 
 def _empty_chat_state():
     return html.Div(className="chat-empty", children=[
@@ -69,7 +70,7 @@ def _empty_sidebar_state():
     ])
 
 
-# ── Mensajes del chat ─────────────────────────────────────────────
+# Mensajes del chat
 
 def render_message(role: str, content: str) -> html.Div:
     is_bot = role == "assistant"
@@ -85,12 +86,12 @@ def render_message(role: str, content: str) -> html.Div:
     )
 
 
-# ── Panel lateral de chunks ───────────────────────────────────────
+# Panel lateral de chunks
 
 def render_chunks_panel(chunks: list[dict],
                         label: str | None,
                         conf:  float | None) -> list:
-    """Orquesta el panel lateral con clasificador y tarjetas de chunks."""
+    # Orquesta el panel lateral con clasificador y tarjetas de chunks.
     items = []
 
     # Emoción detectada en la pregunta
@@ -113,7 +114,7 @@ def render_chunks_panel(chunks: list[dict],
 
 
 def render_chunk_card(chunk: dict, rank: int) -> html.Div:
-    """Tarjeta individual de chunk con emoción del clasificador fine-tuneado."""
+    # Tarjeta individual de chunk con emoción del clasificador fine-tuneado.
     emocion = chunk.get("emotion", "")
     emoji   = EMOTION_EMOJI.get(emocion, "🎵")
 
@@ -133,14 +134,14 @@ def render_chunk_card(chunk: dict, rank: int) -> html.Div:
     ])
 
 
-# ── Layout principal ──────────────────────────────────────────────
+# Layout principal
 
 def build_layout() -> html.Div:
     return html.Div(className="app-wrapper", children=[
         _header(),
         html.Div(className="main-content", children=[
 
-            # ── Columna del chat ──────────────────────────────────
+            # Columna del chat
             html.Div(className="chat-column", children=[
                 html.Div(id="chat-history", className="chat-history"),
 
@@ -170,7 +171,7 @@ def build_layout() -> html.Div:
                 ]),
             ]),
 
-            # ── Sidebar de contexto ───────────────────────────────
+            # Sidebar de contexto
             html.Div(className="sidebar", children=[
                 html.Div(className="sidebar-header", children=[
                     html.H4("CONTEXTO MUSICAL"),

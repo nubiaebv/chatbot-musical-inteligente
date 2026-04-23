@@ -1,11 +1,6 @@
 """
-finetuning_utils.py — Clasificador de emoción como clase con logs y excepciones.
+finetuning_utils.py — Lógica de entrenamiento y etiquetado para el clasificador de emociones.
 
-Flujo:
-  1. Etiquetado combinado: modelo de sentimiento multilingüe + keywords
-  2. Submuestreo para balancear clases (ratio máximo 3x)
-  3. Fine-Tuning de DistilBERT con WeightedTrainer + EarlyStopping
-  4. El modelo fine-tuneado etiqueta TODO el corpus para el RAG
 """
 
 import os
@@ -28,9 +23,9 @@ from app.config import (
 CORPUS_ETIQUETADO_PATH = str(Path(CACHE_DIR) / "corpus_con_emociones.pkl")
 
 
-# ══════════════════════════════════════════════════════════════════
+
 # LOGGER
-# ══════════════════════════════════════════════════════════════════
+
 
 def _configurar_logger(nombre: str) -> logging.Logger:
     logger = logging.getLogger(nombre)
@@ -52,16 +47,10 @@ def _configurar_logger(nombre: str) -> logging.Logger:
     return logger
 
 
-# ══════════════════════════════════════════════════════════════════
-# CLASE EmotionClassifier
-# ══════════════════════════════════════════════════════════════════
-
 class finetuning_utils:
-    """
-    Clasificador de emoción musical con Singleton.
-    Gestiona etiquetado combinado (modelo+keywords), balanceo,
-    entrenamiento con WeightedTrainer+EarlyStopping, evaluación e inferencia.
-    """
+
+    # Clasificador de emociones musicales con patrón Singleton.
+
 
     _instancia = None
 
@@ -80,7 +69,7 @@ class finetuning_utils:
         self._inicializado  = True
         self._log.debug("EmotionClassifier instanciado.")
 
-    # ── Keywords base ────────────────────────────────────────────
+    # Keywords base
 
     KEYWORDS = {
         "alegria":   ["feliz","alegr","fiesta","celebr","reir","gozo","divert",
@@ -100,10 +89,10 @@ class finetuning_utils:
         return {e: sum(texto_lower.count(p) for p in ps)
                 for e, ps in self.KEYWORDS.items()}
 
-    # ── Etiquetado por keywords (umbral 2) ───────────────────────
+    #  Etiquetado por keywords (umbral 2)
 
     def _etiquetar_keywords_estricto(self, texto: str):
-        """Keywords con umbral 2 — alta precisión, baja cobertura."""
+        # Keywords con umbral 2 — alta precisión, baja cobertura.
         texto_lower = texto.lower()
         conteos = self._contar_keywords(texto_lower)
         total   = sum(conteos.values())
@@ -113,17 +102,17 @@ class finetuning_utils:
         return mejor if conteos[mejor] >= 2 else None
 
     def _etiquetar_keywords_suave(self, texto: str):
-        """Keywords con umbral 1 — mayor cobertura para canciones cortas."""
+        # Keywords con umbral 1 — mayor cobertura para canciones cortas.
         texto_lower = texto.lower()
         conteos = self._contar_keywords(texto_lower)
         if max(conteos.values()) == 0:
             return None
         return max(conteos, key=conteos.get)
 
-    # ── Etiquetado con modelo de sentimiento ─────────────────────
+    # Etiquetado con modelo de sentimiento
 
     def _cargar_etiquetador(self):
-        """Carga el modelo de sentimiento multilingüe (singleton)."""
+        #Carga el modelo de sentimiento multilingüe.
         if self._etiquetador is None:
             try:
                 import torch
@@ -141,10 +130,9 @@ class finetuning_utils:
         return self._etiquetador
 
     def _etiquetar_con_modelo(self, texto: str) -> str:
-        """
-        Combina modelo de sentimiento + keywords para etiquetar.
-        Siempre retorna una emoción (nunca None).
-        """
+
+        # Etiquetado híbrido: combina análisis de sentimiento y keywords para asegurar que siempre se asigne una emoción.
+
         try:
             etiquetador = self._cargar_etiquetador()
             texto_lower = texto.lower()
@@ -180,17 +168,12 @@ class finetuning_utils:
             self._log.warning(f"Error en etiquetado con modelo: {e}")
             return "amor"
 
-    # ── Etiquetado del corpus completo ───────────────────────────
+    # Etiquetado del corpus completo
 
     def etiquetar_corpus_keywords(self, canciones: list) -> list:
-        """
-        Etiqueta el corpus usando SOLO keywords con umbral 2.
-        Alta precisión, cobertura ~48%. Las canciones sin señal
-        clara quedan sin etiqueta (se descartan).
 
-        Para ampliar la cobertura usar etiquetar_con_modelo_sentimiento()
-        sobre las canciones que quedaron sin etiqueta.
-        """
+        # Etiquetado por palabras clave: prioriza la precisión y deja las canciones dudosas para el modelo de sentimiento.
+
         from collections import Counter
         self._log.info(f"Etiquetando por keywords ({len(canciones)} canciones)...")
         dataset, sin_etiqueta = [], 0
@@ -225,18 +208,7 @@ class finetuning_utils:
 
     def etiquetar_con_modelo_sentimiento(self, canciones_sin_etiqueta: list,
                                          titulos_ya_etiquetados: set) -> list:
-        """
-        Etiqueta canciones que quedaron sin etiqueta usando el modelo
-        de sentimiento multilingüe + keywords como desempate.
-        Llamar DESPUÉS de etiquetar_corpus_keywords() para ampliar cobertura.
-
-        Args:
-            canciones_sin_etiqueta:  Lista de docs de MongoDB sin etiqueta.
-            titulos_ya_etiquetados:  Set de títulos ya etiquetados (para no duplicar).
-
-        Returns:
-            Lista de nuevos dicts con 'texto' y 'emocion'.
-        """
+        # Completa el etiquetado de canciones restantes usando el modelo de sentimiento y keywords como refuerzo.
         from collections import Counter
         self._log.info(
             f"Etiquetando {len(canciones_sin_etiqueta)} canciones "
@@ -269,20 +241,10 @@ class finetuning_utils:
         except Exception as e:
             self._log.error(f"Error en etiquetado con modelo: {e}")
             raise RuntimeError(f"Error en etiquetado con modelo: {e}") from e
-    # ── Balanceo de clases ───────────────────────────────────────
+    #  Balanceo de clases
 
     def balancear_dataset(self, dataset: list, ratio_max: float = 3.0) -> list:
-        """
-        Submuestrea las clases mayoritarias para reducir el desbalance.
-        Mantiene todas las muestras de las clases minoritarias.
-
-        Args:
-            dataset:   Lista de dicts con campo 'emocion'.
-            ratio_max: Máximo ratio permitido entre clase mayor y menor.
-
-        Returns:
-            Dataset balanceado.
-        """
+        # Balancea el dataset mediante submuestreo para evitar que las clases mayoritarias sesguen el entrenamiento.
         from collections import Counter
 
         random.seed(RANDOM_SEED)
@@ -310,10 +272,10 @@ class finetuning_utils:
         self._log.info(f"Total final: {len(dataset_balanceado)} | Ratio: {nuevo_ratio:.1f}x")
         return dataset_balanceado
 
-    # ── Dataset HuggingFace ──────────────────────────────────────
+    # Dataset HuggingFace
 
     def preparar_dataset_hf(self, dataset_etiquetado: list):
-        """Prepara DatasetDict con splits 70/15/15 y seed fijo."""
+        # Divide el dataset en entrenamiento, validación y prueba (70/15/15) con una semilla fija para replicar resultados.
         from datasets import Dataset, DatasetDict
         from collections import Counter
 
@@ -349,10 +311,10 @@ class finetuning_utils:
             self._log.error(f"Error al preparar dataset: {e}")
             raise RuntimeError(f"Error en preparación del dataset: {e}") from e
 
-    # ── Tokenización ─────────────────────────────────────────────
+    # Tokenización
 
     def _tokenizar_dataset(self, dataset_dict, tokenizer):
-        """Tokeniza el DatasetDict."""
+        # Aplica el tokenizador al dataset para preparar los textos según el formato de DistilBERT.
         def tokenizar(batch):
             return tokenizer(batch["texto"], truncation=True,
                              padding="max_length", max_length=MAX_LENGTH)
@@ -364,15 +326,11 @@ class finetuning_utils:
         tokenizado.set_format("torch")
         return tokenizado
 
-    # ── Entrenamiento ────────────────────────────────────────────
+    # Entrenamiento
 
     def entrenar(self, dataset_dict, num_labels=None):
-        """
-        Fine-Tuning de DistilBERT con:
-          - WeightedTrainer: corrige desbalance con CrossEntropyLoss ponderado
-          - EarlyStoppingCallback: detiene si no mejora en 2 épocas
-          - warmup_ratio: calentamiento gradual del learning rate
-        """
+        # Entrena DistilBERT usando pesos para compensar el desbalance y parada temprana para evitar el sobreajuste.
+
         import torch
         import torch.nn as nn
         from transformers import (
@@ -389,7 +347,7 @@ class finetuning_utils:
             if num_labels is None:
                 num_labels = len(set(dataset_dict["train"]["label"]))
 
-            # ── Class weights ─────────────────────────────────────
+            # Class weights
             labels_train  = np.array(dataset_dict["train"]["label"])
             clases_unicas = np.unique(labels_train)
             pesos         = compute_class_weight("balanced",
@@ -401,7 +359,7 @@ class finetuning_utils:
             for idx, peso in zip(clases_unicas, pesos):
                 self._log.info(f"  {ID2EMOCION.get(int(idx), idx):12s}: {peso:.4f}")
 
-            # ── WeightedTrainer ───────────────────────────────────
+            # WeightedTrainer
             class WeightedTrainer(Trainer):
                 def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
                     labels  = inputs.pop("labels")
@@ -411,7 +369,7 @@ class finetuning_utils:
                     )(outputs.logits, labels)
                     return (loss, outputs) if return_outputs else loss
 
-            # ── Modelo y tokenizer ────────────────────────────────
+            # Modelo y tokenizer
             tokenizer = AutoTokenizer.from_pretrained(FINETUNE_BASE)
             model     = AutoModelForSequenceClassification.from_pretrained(
                 FINETUNE_BASE, num_labels=num_labels,
@@ -434,7 +392,7 @@ class finetuning_utils:
                 f"Batch: {BATCH_SIZE} | LR: {LEARNING_RATE}"
             )
 
-            # ── TrainingArguments ─────────────────────────────────
+            #  TrainingArguments
             training_args = TrainingArguments(
                 output_dir=FINETUNE_MODEL_DIR,
                 num_train_epochs=MAX_EPOCHS,
@@ -454,7 +412,7 @@ class finetuning_utils:
                 fp16=torch.cuda.is_available(),
             )
 
-            # ── Trainer con EarlyStopping ─────────────────────────
+            #  Trainer con EarlyStopping
             trainer = WeightedTrainer(
                 model=model, args=training_args,
                 train_dataset=dataset_tok["train"],
@@ -477,10 +435,10 @@ class finetuning_utils:
             self._log.error(f"Error durante el entrenamiento: {e}")
             raise RuntimeError(f"Error en fine-tuning: {e}") from e
 
-    # ── Evaluación ───────────────────────────────────────────────
+    # Evaluación
 
     def evaluar(self, trainer, dataset_dict, tokenizer) -> dict:
-        """Evalúa en test set y guarda métricas en resultados/metricas.json."""
+        # Prueba el modelo con el set de test y exporta los resultados a un JSON para documentar el rendimiento.
         from sklearn.metrics import (
             accuracy_score, f1_score, classification_report, confusion_matrix
         )
@@ -519,14 +477,11 @@ class finetuning_utils:
             self._log.error(f"Error en evaluación: {e}")
             raise RuntimeError(f"Error al evaluar el modelo: {e}") from e
 
-    # ── Etiquetar corpus completo con el modelo ──────────────────
+    # Etiquetar corpus completo con el modelo
 
     def etiquetar_corpus_con_modelo(self, canciones: list,
                                      batch_size=64, forzar=False) -> list:
-        """
-        Usa el clasificador fine-tuneado para etiquetar TODO el corpus.
-        Resultado cacheado en disco para no repetir la inferencia.
-        """
+        # Etiqueta el corpus completo con el modelo final y guarda una copia local para evitar procesamientos repetidos.
         import pickle
         import torch
 
@@ -612,10 +567,10 @@ class finetuning_utils:
             self._log.error(f"Error al etiquetar corpus con modelo: {e}")
             raise RuntimeError(f"Error en etiquetado con modelo: {e}") from e
 
-    # ── Inferencia en tiempo real ────────────────────────────────
+    # Inferencia en tiempo real
 
     def cargar_clasificador(self):
-        """Carga el clasificador fine-tuneado para inferencia (singleton)."""
+        # Carga el modelo entrenado mediante el patrón Singleton para asegurar una única instancia durante la inferencia.
         if self._pipeline_clf is None:
             if not Path(FINETUNE_MODEL_DIR).exists():
                 self._log.warning("No hay modelo fine-tuneado disponible.")
@@ -634,13 +589,7 @@ class finetuning_utils:
         return self._pipeline_clf
 
     def predecir_emocion(self, texto: str):
-        """
-        Predice la emoción de un texto.
-        Robusto a cualquier estructura de output del pipeline.
-
-        Returns:
-            dict con 'emocion' y 'score', o None si no hay modelo.
-        """
+        # Realiza la inferencia del texto y asegura un formato de salida consistente para el chatbot.
         try:
             clf = self.cargar_clasificador()
             if clf is None:

@@ -31,7 +31,7 @@ ASSETS_DIR       = BASE_DIR / "app" / "assets"
 for d in [CACHE_DIR, MODELS_DIR, RESULTADOS_DIR, LOGS_DIR]:
     d.mkdir(parents=True, exist_ok=True)
 
-# ─── RUTAS DE DATOS Y CACHÉ ──────────────────────────────────────────────────
+# RUTAS DE DATOS Y CACHÉ
 DATA_PATH        = os.getenv("DATA_PATH",   str(DATA_DIR / "corpus_canciones.csv"))
 EMBED_CACHE_PATH = os.getenv("EMBED_CACHE", str(DATA_DIR / "embeddings_cache" / "faiss_index.pkl"))
 MODEL_DIR        = os.getenv("MODEL_DIR",   str(MODELS_DIR / "clasificador"))
@@ -89,12 +89,12 @@ en lugar de inventar. Eres amable, empático y apasionado por la música. \
 IMPORTANTE: Responde siempre en español, sin importar el idioma de las letras \
 recuperadas o el idioma en que te hagan la pregunta."""
 
-# ─── PARÁMETROS DE RAG Y CHAT ───────────────────────────────────────────────
+# PARÁMETROS DE RAG Y CHAT
 TOP_K          = int(os.getenv("TOP_K",         "5"))  # Cantidad de chunks a recuperar
 HISTORY_TURNS  = int(os.getenv("HISTORY_TURNS", "5"))  # Memoria de la conversación
 CHUNKING_STRAT = "paragraph"                           # Estrategia de fragmentación
 
-# ─── CONFIGURACIÓN DE APP (DASH) ────────────────────────────────────────────
+# CONFIGURACIÓN DE APP (DASH)
 APP_PORT  = 8050
 APP_DEBUG = False  # Desactivado para mayor estabilidad en la presentación
 

@@ -1,6 +1,6 @@
 """
-src/logic.py — Adaptador entre la interfaz visual y el ChatbotEngine.
-Conecta main.py con el backend real (MongoDB + RAG + Fine-Tuning).
+src/logic.py — # Actúa como puente entre la interfaz de usuario y el motor del chatbot,
+coordinando la persistencia en MongoDB y la lógica del RAG.
 """
 from __future__ import annotations
 
@@ -17,13 +17,13 @@ sys.path.insert(0, str(ROOT))
 logger = logging.getLogger(__name__)
 
 
-# ══════════════════════════════════════════════════════════════════
+
 # ESTRUCTURAS DE DATOS (compatibles con interface.py)
-# ══════════════════════════════════════════════════════════════════
+
 
 @dataclass
 class Chunk:
-    """Fragmento recuperado por el RAG — compatible con render_chunk_card()."""
+    #Fragmento recuperado por el RAG — compatible con render_chunk_card().
     text:   str
     song:   str
     artist: str
@@ -33,7 +33,7 @@ class Chunk:
 
 
 class RAGResult:
-    """Resultado del chatbot — compatible con main.py."""
+    #Resultado del chatbot — compatible con main.py.
     def __init__(self, answer: str, chunks: List[Chunk],
                  classifier_label: str = None,
                  classifier_conf:  float = None):
@@ -43,21 +43,12 @@ class RAGResult:
         self.classifier_conf  = classifier_conf
 
 
-# ══════════════════════════════════════════════════════════════════
+
 # MOTOR PRINCIPAL — wrapper sobre ChatbotEngine
-# ══════════════════════════════════════════════════════════════════
+
 
 class ChatEngine:
-    """
-    Adaptador que conecta la interfaz visual (main.py / interface.py)
-    con el backend real del proyecto (MongoDB + RAG + Fine-Tuning).
-
-    main.py llama a:
-      engine.initialize()    → carga modelos y RAG
-      engine.chat(text)      → procesa pregunta y retorna RAGResult
-      engine.clear_history() → limpia historial
-      engine._initialized    → booleano de estado
-    """
+    # Proporciona una interfaz unificada para inicializar el sistema, procesar consultas mediante RAG y gestionar el historial de conversación.
 
     def __init__(self):
         self._initialized  = False
@@ -68,13 +59,7 @@ class ChatEngine:
         logger.info("ChatEngine creado. Llama a initialize() para cargar modelos.")
 
     def initialize(self):
-        """
-        Carga todos los componentes del sistema:
-        1. Conexión a MongoDB Atlas
-        2. Corpus etiquetado con emociones
-        3. Índice FAISS
-        4. ChatbotEngine con Flan-T5
-        """
+        # Orquesta la carga de la persistencia en la nube, el corpus procesado, el índice de búsqueda y el motor de generación.
         try:
             logger.info("Inicializando sistema MúsicBot...")
 
@@ -117,10 +102,7 @@ class ChatEngine:
             raise
 
     def chat(self, user_msg: str, use_rag: bool = True) -> RAGResult:
-        """
-        Procesa la pregunta del usuario y retorna un RAGResult
-        compatible con la interfaz visual.
-        """
+        # Transforma la consulta del usuario en una respuesta enriquecida por el RAG, garantizando la compatibilidad con los componentes de la interfaz.
         if not self._initialized or self._bot is None:
             return RAGResult(
                 answer="⏳ El sistema todavía está cargando. Espera un momento.",

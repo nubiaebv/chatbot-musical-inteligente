@@ -1,6 +1,6 @@
 """
-Motor del Chatbot Musical MúsicBot
-Integra clasificador fine-tuneado + RAG +  memoria conversacional.
+Lógica principal del chatbot: combina el clasificador de emociones + RAG + historial.
+
 """
 
 import os
@@ -43,17 +43,7 @@ def _configurar_logger(nombre: str) -> logging.Logger:
     return logger
 
 class chatbot_engine:
-    """
-    Motor conversacional de MúsicBot.
-
-    Pipeline por turno:
-      1. Predecir emoción con el clasificador fine-tuneado
-      2. Buscar chunks en FAISS filtrando por esa emoción
-      3. Fallback sin filtro si hay pocos resultados
-      4. Construir prompt con sistema + historial + contexto
-      5. Generar respuesta con el backend configurado
-      6. Actualizar memoria conversacional
-    """
+    # clase principal del chatbot → une clasificador de emociones + busqueda FAISS + flan-t5
 
     def __init__(self):
         self._log      = _configurar_logger("chatbot_engine")
@@ -68,7 +58,7 @@ class chatbot_engine:
     # Inicialización del generador
 
     def _inicializar_generador(self):
-        """Carga el backend de generación según la configuración."""
+       # carga el modelo de generacion flan-t5
         try:
             if GENERATOR_MODEL == "local":
                 self._cargar_flan_t5()
@@ -93,18 +83,12 @@ class chatbot_engine:
             self._log.error(f"Error al cargar Flan-T5: {e}")
             raise RuntimeError(f"No se pudo cargar Flan-T5: {e}") from e
 
-    # ── Detección de intención ───────────────────────────────────
+    # Detección de intención
 
     def _detectar_intencion(self, pregunta: str) -> str:
-        """
-        Detecta el tipo de pregunta para usar el prompt correcto.
 
-        Returns:
-            'recomendacion' → buscar canción y recomendar
-            'informativa'   → pregunta sobre artistas, géneros, diferencias
-            'seguimiento'   → referencia a turno anterior
-            'fuera_dominio' → no relacionado con música
-        """
+        # Identifica el tipo de pregunta para usar el prompt correcto.
+
         p = pregunta.lower().strip()
 
         fuera_dominio = [
@@ -137,7 +121,7 @@ class chatbot_engine:
 
         return "recomendacion"
 
-    # ── Generación con Flan-T5 ───────────────────────────────────
+    # Generación con Flan-T5
 
     def _generar_flan_t5(self, pregunta: str, chunks: list,
                          intencion: str = "recomendacion") -> str:
@@ -147,8 +131,7 @@ class chatbot_engine:
             mejor = chunks[0] if chunks else None
             segundo = chunks[1] if len(chunks) >= 2 else None
 
-            # Prompts específicos por intención — sin SYSTEM_PROMPT para evitar
-            # que Flan-T5 lo copie en el output
+            # Definición de prompts por intención: se omite el SYSTEM_PROMPT para que Flan-T5 no lo repita en la respuesta final.
             if intencion == "fuera_dominio":
                 prompt = (
                     f"Question: {pregunta}\n"
@@ -274,7 +257,7 @@ class chatbot_engine:
     # Generación de respuesta
 
     def _generar(self, pregunta: str, chunks: list, intencion: str = "recomendacion") -> str:
-        """Genera la respuesta con el backend configurado."""
+        # Genera la respuesta con el backend configurado.
         try:
             if self._flan_model is not None:
                 return self._generar_flan_t5(pregunta, chunks, intencion)
@@ -286,15 +269,7 @@ class chatbot_engine:
             return "Lo siento, ocurrió un error al generar la respuesta."
 
     def _detectar_intencion(self, pregunta: str) -> str:
-        """
-        Detecta el tipo de pregunta antes de generar respuesta.
-
-        Returns:
-            'recomendacion' → buscar canción y recomendar
-            'informativa'   → pregunta sobre artistas, géneros, diferencias
-            'seguimiento'   → referencia a turno anterior
-            'fuera_dominio' → no relacionado con música
-        """
+        # Identifica la intención del usuario para decidir si debe buscar canciones, responder dudas o manejar el contexto.
         p = pregunta.lower().strip()
 
         # Palabras que indican fuera de dominio
@@ -415,12 +390,12 @@ class chatbot_engine:
     # Gestión del historial
 
     def limpiar_historial(self):
-        """Reinicia la memoria conversacional."""
+        # Reinicia la memoria conversacional.
         self.historial = []
         self._log.info("Historial conversacional limpiado.")
 
     def get_historial_display(self) -> list:
-        """Retorna el historial en formato para la interfaz Dash."""
+        # Retorna el historial en formato para la interfaz Dash.
         mensajes = []
         for turno in self.historial:
             mensajes.append({"role": "user",      "content": turno["usuario"]})
